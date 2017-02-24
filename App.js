@@ -3,66 +3,65 @@ Ext.define('PrintApp', {
     componentCls: 'app',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
     theGrid: undefined,
-    theFetch: ['FormattedID', 
-    'Name', 
-    'Project', 
-    'Owner', 
-    'Size', 
-    'DisplayColor', 
-    'State',
-    'PreliminaryEstimate',
-    'Parent',
-    'ActualStartDate',
-    'ActualEndDate',
-    'PlannedStartDate',
-    'PlannedEndDate',
-    'c_QRWP',
-    'PortfolioItemType',
-    'c_OrderBookNumberOBN'],
-    items: [ // pre-define the general layout of the app; the skeleton (ie. header, content, footer)
-        {
-            xtype: 'container', // this container lets us control the layout of the pulldowns; they'll be added below
-            itemId: 'pulldown-container',
-            margin: '5 5 5 5',
-            layout: {
-                type: 'hbox', // 'horizontal' layout
-                align: 'stretch'
-            }
-        }
+    theFetch: ['FormattedID',
+        'Name',
+        'Project',
+        'Owner',
+        'Size',
+        'DisplayColor',
+        'State',
+        'PreliminaryEstimate',
+        'Parent',
+        'ActualStartDate',
+        'ActualEndDate',
+        'PlannedStartDate',
+        'PlannedEndDate',
+        'c_QRWP',
+        'PortfolioItemType',
+        'c_OrderBookNumberOBN'
     ],
     launch: function () {
-        this._addFetchType();
-
+        var me = this;
+        me._createLayout();
     },
 
-    onModelRetrieved: function (model) {
-        this.model = model;
-        this.createDefect();
+    _createLayout: function () {
+        var me = this;
+        var theLayout = Ext.create({
+            xclass: 'app.Layout',
+            renderTo: Ext.getBody().dom
+
+        });
+        var viewport = me.add(theLayout);
+        this._addFetchType(viewport);
     },
 
 
 
-    _addFetchType: function () {
+    _addFetchType: function (viewport) {
+        console.log(viewport);
         var me = this;
         var iterComboBox = Ext.create('Rally.ui.combobox.PortfolioItemTypeComboBox', {
             itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
             fieldLabel: 'Select',
             labelAlign: 'left',
             width: 300,
-            defaultSelectionPosition: 'first',
             listeners: {
                 ready: function () {
-                    me._loadData(1); // initialization flow: next, load severities
-                    console.log(' Ready ', iterComboBox);
+                    me._loadData(viewport); // initialization flow: next, load severities
+                    //console.log(' Ready ', iterComboBox);
                 },
                 select: function () {
-                    me._loadData(2); // user interactivity: when they choose a value, (re)load the data
-                    console.log(' Change ', iterComboBox);
+                    me._loadData(viewport); // user interactivity: when they choose a value, (re)load the data
+                    // console.log(' Change ', iterComboBox);
                 },
                 scope: me
             },
         });
-        this.down('#pulldown-container').add(iterComboBox); // add the iteration list to the pulldown container so it lays out horiz, not the app!
+        viewport.getComponent('north').add(iterComboBox);
+        //console.log(me.viewport);
+        //me.viewport.add(iterComboBox);
+        //me.down('north').add('d'); // add the iteration list to the pulldown container so it lays out horiz, not the app!
     },
 
 
@@ -73,15 +72,13 @@ Ext.define('PrintApp', {
             operation: '=',
             value: value
         });
-        console.log('Filter');
         return theFilter;
     },
-    _loadData: function (myX) {
-        console.log('f _loadData', myX);
+    _loadData: function (viewport) {
+        console.log('Store');
         var me = this;
         var selectedItem = this.down('#portfolio-combobox').getRecord().get('_ref'); // the _ref is unique, unlike the iteration name that can change; lets query on it instead!
         var myFilter = this._getFilters(selectedItem);
-        console.log(myFilter);
         // if store exists, just load new data
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
@@ -96,7 +93,8 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData, success) {
                         if (!me.theGrid) { // only create a grid if it does NOT already exist
-                            me._createGrid(myStore); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                            console.log(myData);
+                            me._createResults(myData, viewport); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
                         }
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
@@ -105,14 +103,52 @@ Ext.define('PrintApp', {
             });
         }
     },
-    _createGrid: function (mytheStore) {
-        var me = this;
-        me.theGrid = Ext.create('Rally.ui.grid.Grid', {
-            store: mytheStore,
-            columnCfgs: this.theFetch
-        });
-        me.add(me.theGrid); // add the grid Component to the app-level Container (by doing this.add, it uses the app container)
-    }
+    _createResults: function (myData, viewport) {
+        console.log('vp');
+        var html = '<div>';
+        for (var x = 0; x < myData.length; x++) {
+            console.log('loop');
+            html += '<div>' + myData[x].raw._refObjectName + '</div>';
+        }
+        html += '</div>';
 
+        var myTable = Ext.create('Ext.panel.Panel', {
+            title: 'Table Layout',
+            width: 1000,
+            height: 150,
+            layout: {
+                type: 'table',
+                // The total column count must be specified here
+                columns: 3
+            },
+            style: {
+                backgorund: '#ff6600'
+            },
+            defaults: {
+                // applied to each contained panel
+                bodyStyle: 'padding:20px'
+            },
+            items: [{
+                html: 'Cell A content',
+                rowspan: 2
+            }, {
+                html: 'Cell B content',
+                colspan: 2
+            }, {
+                html: 'Cell C content',
+                cellCls: 'highlight'
+            }, {
+                html: 'sdfsdfasdfasdfasdf'//viewport.getComponent('#center')
+            }],
+            //renderTo: viewport.getComponent('center')
+        });
+
+        viewport.getComponent('center').add( myTable);
+
+
+
+        console.log('end of');
+
+    }
 
 });
