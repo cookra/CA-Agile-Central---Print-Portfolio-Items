@@ -3,7 +3,7 @@ Ext.define('app.Layout', {
         console.log('Added Viewport');
         var viewport = Ext.create('Ext.container.Viewport', {
             layout: 'border',
-
+            id: 'nutts',                 
             items: [{
                     region: 'north',
                     xtype: 'panel',
@@ -13,11 +13,16 @@ Ext.define('app.Layout', {
                     minHeight: 40,
                 }, {
                     region: 'center',
-                    xtype: 'panel',
+                    xtype: 'container',
                     itemId: 'center',
                     id: 'viewPortCenter',
                     autoScroll: true,
-                    tpl: '<span>Hello {name}</span>',
+                    
+                    listeners: {
+                        afterrender: function(){
+                            console.log('loaded');
+                        }
+                    }
                 },
                 {
                     region: 'south',

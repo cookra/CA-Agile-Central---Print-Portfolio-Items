@@ -39,7 +39,6 @@ Ext.define('PrintApp', {
 
 
     _addFetchType: function (viewport) {
-        console.log(viewport);
         var me = this;
         var iterComboBox = Ext.create('Rally.ui.combobox.PortfolioItemTypeComboBox', {
             itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
@@ -71,7 +70,6 @@ Ext.define('PrintApp', {
         return theFilter;
     },
     _loadData: function (viewport) {
-        console.log('Store');
         var me = this;
         var selectedItem = this.down('#portfolio-combobox').getRecord().get('_ref'); // the _ref is unique, unlike the iteration name that can change; lets query on it instead!
         var myFilter = this._getFilters(selectedItem);
@@ -79,6 +77,7 @@ Ext.define('PrintApp', {
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
+        console.log('Store');
             // create store
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
@@ -100,8 +99,7 @@ Ext.define('PrintApp', {
         }
     },
     _createResults: function (myData, viewport) {
-        console.log('vp');
-        var html = '<div>';
+        html = '<div>';
         for (var x = 0; x < myData.length; x++) {
             //console.log('loop');
             html += '<div>' + myData[x].raw._refObjectName + '</div>';
@@ -112,26 +110,29 @@ Ext.define('PrintApp', {
         //var centerRegion = viewport.getComponent(1);
         //centerRegion.removeAll();
         //centerRegion.
-        viewport.down('#center').add(this._container(html));
-
-        console.log('>>>>>', viewport.down('#center').add(this._container()));
-
+        //viewport.down('#center').add(this._container(html));
+        //console.log('>>>>>', viewport.down('#center').add(this._container()));
+        var zone = Ext.ComponentQuery.query('viewport')[1];
+        var center = viewport.down('[region=center]');
+        console.log(zone);
+        center.removeAll();
+        //var view = Ext.create('MyView');
+        zone.add(this._container(html));
     },
 
     _container: function (html) {
-        console.log('Added Viewport');
         var viewport = Ext.create('Ext.container.Viewport', {
-            layout: 'border',
-
             items: [{
-                    region: 'center',
-                    xtype: 'panel',
-                    itemId: 'center',
-                    id: 'xxx',
-                    autoScroll: true,
-                    html: html,
-                },
-            ]
+                region: 'center',
+                xtype: 'container',
+                itemId: 'center',
+                id: 'xxx',
+                autoScroll: true,
+                html: html,
+                style: {
+                    color: 'black'
+                }
+            }, ]
         });
         return viewport;
     },
