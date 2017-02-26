@@ -47,10 +47,6 @@ Ext.define('PrintApp', {
             labelAlign: 'left',
             width: 300,
             listeners: {
-                ready: function () {
-                    me._loadData(viewport); // initialization flow: next, load severities
-                    //console.log(' Ready ', iterComboBox);
-                },
                 select: function () {
                     me._loadData(viewport); // user interactivity: when they choose a value, (re)load the data
                     // console.log(' Change ', iterComboBox);
@@ -93,7 +89,7 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData, success) {
                         if (!me.theGrid) { // only create a grid if it does NOT already exist
-                            console.log(myData);
+                            //console.log(myData);
                             me._createResults(myData, viewport); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
                         }
                     },
@@ -107,48 +103,40 @@ Ext.define('PrintApp', {
         console.log('vp');
         var html = '<div>';
         for (var x = 0; x < myData.length; x++) {
-            console.log('loop');
+            //console.log('loop');
             html += '<div>' + myData[x].raw._refObjectName + '</div>';
         }
         html += '</div>';
 
-        var myTable = Ext.create('Ext.panel.Panel', {
-            title: 'Table Layout',
-            width: 1000,
-            height: 150,
-            layout: {
-                type: 'table',
-                // The total column count must be specified here
-                columns: 3
-            },
-            style: {
-                backgorund: '#ff6600'
-            },
-            defaults: {
-                // applied to each contained panel
-                bodyStyle: 'padding:20px'
-            },
+        //viewport.update({copy: html});
+        //var centerRegion = viewport.getComponent(1);
+        //centerRegion.removeAll();
+        //centerRegion.
+        viewport.down('#center').add(this._container(html));
+
+        console.log('>>>>>', viewport.down('#center').add(this._container()));
+
+    },
+
+    _container: function (html) {
+        console.log('Added Viewport');
+        var viewport = Ext.create('Ext.container.Viewport', {
+            layout: 'border',
+
             items: [{
-                html: 'Cell A content',
-                rowspan: 2
-            }, {
-                html: 'Cell B content',
-                colspan: 2
-            }, {
-                html: 'Cell C content',
-                cellCls: 'highlight'
-            }, {
-                html: 'sdfsdfasdfasdfasdf'//viewport.getComponent('#center')
-            }],
-            //renderTo: viewport.getComponent('center')
+                    region: 'center',
+                    xtype: 'panel',
+                    itemId: 'center',
+                    id: 'xxx',
+                    autoScroll: true,
+                    html: html,
+                },
+            ]
         });
+        return viewport;
+    },
 
-        viewport.getComponent('center').add( myTable);
 
 
-
-        console.log('end of');
-
-    }
 
 });
