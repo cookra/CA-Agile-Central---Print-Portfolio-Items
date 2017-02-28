@@ -7,62 +7,202 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                Ext.define('App.card', {
+                Ext.define('App.Runtime', {
+    singleton: true,
+    config: {
+        // Versioning
+        Pversion: 'v2.0.0',
+        PappID: 'AC Print Portfolio Items',
+        Powner: 'Richard Cook',
+        PreleaseDate: '2017-02-28 : 17:07',
+        Pdescription: 'Print Portfolio Items',
+        // Git Repo Details
+        PrepoAddress: 'not shared',
+        // Emailer Contact Details
+        //
+
+    },
+    constructor: function (config) {
+        console.log('c config.Runtime f constructor');
+        var me = this;
+        me.initConfig(config);
+    },
+});
+                Ext.define('App.Emailer', {
+    singleton: true,
+    constructor: function () {
+        console.log('Config added: c Email');
+    },
+    _emailer: function (coreData, xData1, xData2, xData3, xData4) {
+        var gProp = App.Runtime;
+        var PcontactSubject = 'REF: AC APP ';
+        var PcontactMessage = '=========== Please leave your message above this line ==========';
+        var PcontactEmail = 'richard.cook@barclaycard.co.uk';
+        // User Vars
+        var yourapp = '> Browser Web App Name > ' + navigator.appName;
+        var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
+        var yourversion = '> Browser Version > ' + navigator.appVersion;
+        var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
+        var yourplatform = '> Platform > ' + navigator.platform;
+        var youroscpu = '> OS CPU > ' + navigator.oscpu;
+        var yourcookie = '> Cookie Enabled > ' + navigator.cookieEnabled;
+        var outwinw = '> Owidth > ' + window.outerWidth;
+        var outwinh = '> Oheight > ' + window.outerHeight;
+        var inwinw = '> Iwidth > ' + window.innerWidth;
+        var inwinh = '> Iheight > ' + window.innerHeight;
+        var uri = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
+        var src = '> SRC > ' + document.getElementsByTagName('script')[0].src;
+        var localname = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
+        var type = '> Type > ' + document.getElementsByTagName('script')[0].type;
+        var userData = [
+            yourapp,
+            yourappalt,
+            yourversion,
+            yourappcodename,
+            yourplatform,
+            youroscpu,
+            yourcookie,
+            outwinw,
+            outwinh,
+            inwinw,
+            inwinh,
+            uri,
+            src,
+            localname,
+            type
+        ];
+        // Tools
+        var charReturn = '\r\n';
+        // Emailer
+        var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
+        var message = PcontactMessage;
+        var report = '';
+        console.log('xData1 Array = ', xData1);
+        console.log('xData2 Array = ', xData2);
+        console.log('xData3 Array = ', xData3);
+        console.log('xData4 Array = ', xData4);
+
+        report += charReturn + charReturn;
+        report += 'Environment Report > ' + charReturn;
+        report += '> Sencha ExtJS Version > ' + Ext.getVersion().version + charReturn + charReturn;
+        report += 'Agile Central Report > ' + charReturn;
+        report += '> AC User Username > ' + xData1.UserName+ charReturn;
+        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
+        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
+        report += '> AC User Role > ' + xData1.Role+ charReturn;
+        report += '> AC User Loc > ' + xData1._ref+ charReturn;
+        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
+        report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
+        //report += '> AC User Default Node > ' + xData1.UserProfile.DefaultProject.Name+ charReturn;
+        //report += '> AC User Default Workapace > ' + xData1.UserProfile.DefaultWorkspace.Name+ charReturn;
+        report += '> AC Application Node > ' + xData2.Name+ charReturn;
+        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
+        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
+        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
+        report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
+        report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
+        report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
+
+        report += 'Build Details ' + charReturn;
+        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
+        report += '> Owner > ' + gProp.Powner + charReturn;
+        report += '> Version > ' + gProp.Pversion + charReturn;
+        report += '> Description > ' + gProp.Pdescription + charReturn;
+        report += '> App ID > ' + gProp.PappID + charReturn + charReturn;
+
+        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
+        for (var i = 0; i < coreData.length; i++) {
+            report += '> ',coreData[i].raw.FormattedID + ' : ';
+            report += coreData[i].raw.Name + ' : ';
+            report += coreData[i].raw._ref + charReturn;
+        }
+        report += charReturn;
+        report += 'System Report Found ' + userData.length + ' items'+charReturn;
+        for (var x = 0; x < userData.length; x++) {
+            report += userData[x] + charReturn;
+        }
+        report = encodeURIComponent(report);
+        return window.location = 'mailto:' + PcontactEmail + '?subject=' + subject + '&body=' + message + report;
+    },
+});
+                Ext.define('App.Card', {
     theMarkup: null,
     _build: function (cardNum, totalCards, data) {
-        // Validators
-        if (data.raw.Release === undefined || !data.raw.Release) {
-            myRelease = "No Release";
-        } else {
-            myRelease = data.raw.Release.Name;
-        }
-        if (!data.raw.c_QRWP) {
-            var myQRWP = "No QRWP";
-        } else {
-            var myQRWP = data.raw.Project.c_QRWP;
-        }
-        if (!data.raw.c_OBN) {
-            var myOBN = "No OBN";
-        } else {
-            var myOBN = data.raw.Project.c_OBN;
-        }
-        if (!data.raw.DisplayColor) {
-            var myColour = "#ff6600";
-        } else {
-            var myColour = data.raw.DisplayColor;
-        }
-        if (!data.raw.Project) {
-            var myNode = "No Team Assigned";
-        } else {
-            var myNode = data.raw.Project.Name;
-        }
-        if (data.raw.Owner._refObjectName=== undefined || !data.raw.Owner._refObjectName) {
-            var myOwner = "No Owner Assigned";
-        } else {
-            var myOwner = data.raw.Owner._refObjectName;
-        }
-        if (!data.raw.Parent) {
-            console.log('-');
-            var myParentID = "Top Level / Missing?";
-            var myParentIDName = "";
-        } else {
-            console.log('+');
-            var myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
-            var myParentIDName = data.raw.Parent.Name;
+        var myRelease, myQRWP, myOBN, myColour, myNode, myParentID, myParentIDName, myEstimate, myName, myOwner, myId;
 
+
+        // @Scenario 1: Strategic Objective ######################################################################
+        // No OBN
+        // No Release
+        // No Parent
+        // No QRWP
+        // @Scenario 2: Portfolio Objective ######################################################################
+        // No OBN
+        // No Release
+        // No QRWP
+        // @Scenario 2: Portfolio Epic
+        // MUST HAVE OBN !!! (Cost Allocation) ######################################################################
+        // No Release
+        // No QRWP
+        // @Scenario 3: Business Outcome ######################################################################
+        // No OBN
+        // @Scenario 4: Feature
+        // No OBN
+        if (data.raw.c_OrderBookNumberOBN) {
+            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type);
+        } else {
+            myOBN = this._checkMissing(data.raw._type, 'OBN');
+        }
+        if (data.raw.DisplayColor) {
+            myColour = data.raw.DisplayColor;
+        } else {
+            myColour = "#ff6600";
+        }
+        if (data.raw.Project) {
+            myNode = this._shortenString(data.raw.Project.Name, 50, data.raw._type);
+        } else {
+            myNode = "No Team Assigned";
+        }
+        if (data.raw.Release === undefined || !data.raw.Release) {
+            myRelease = this._checkMissing(data.raw._type, 'Release');
+        } else {
+            myRelease = this._shortenString(data.raw.Release.Name, 50, data.raw._type);
+        }
+
+        if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
+            myQRWP = this._checkMissing(data.raw._type, 'QRWP');
+        } else {
+            myQRWP = this._shortenString(data.raw.c_QRWP, 50, data.raw._type);
+        }
+        if (data.raw.Parent) {
+            myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
+            myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type);
+        } else {
+            myParentIDName = "";
+            myParentID = this._checkMissing(data.raw._type, 'Parent');
         }
         if (data.raw.PreliminaryEstimate) {
-            var myEstimate = data.raw.PreliminaryEstimate.Name;
+            myEstimate = data.raw.PreliminaryEstimate.Name;
         } else if (data.raw.PlanEstimate) {
-            var myEstimate = data.raw.PlanEstimate;
+            myEstimate = data.raw.PlanEstimate;
         } else if (data.raw.Estimate) {
-            var myEstimate = data.raw.Estimate;
+            myEstimate = data.raw.Estimate;
         } else {
-            var myEstimate = "Not Sized";
+            myEstimate = "Missing";
         }
-        // No validation needed as these are constant across all levels of the portfolio
-        var myId = data.raw.FormattedID;
-        var myName = data.raw._refObjectName;
+        if (data.raw._refObjectName) {
+            myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type);
+        } else {
+            myName = 'No Name';
+
+        }
+        if (data.raw.Owner) {
+            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50, data.raw._type);
+        } else {
+            myOwner = 'No Owner';
+
+        }
+        myId = data.raw.FormattedID;
         // NASTY HACK FOR ExtJS (Inline CSS builds) //
         var cssStyleTag_Start = ' style="';
         var cssStyleTag_End = '"';
@@ -71,22 +211,23 @@
         var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
         var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:50px;' + cssStyleTag_End;
         var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:'+data.raw.DisplayColor+ cssStyleTag_End;
+        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
         var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
         var theMarkup =
             '<div class="crop-marks" ' + cssCropmarks + '>' +
             '<div class="artifact" ' + cssArtifacts + '>' +
             '<div class="row_id" ' + cssRow_Id + '>' + myId + '</div>' +
-            '<div class="row_parent" ' + cssRow_Parent + '><span style="color:#ff6600">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
             '<div class="row_name" ' + cssRow_Name + '><span style="color:#ff6600">Name:</span> ' + myName + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">T-Shirt Size:</span> ' + myEstimate + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">Node:</span> ' + myNode + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">Release:</span> ' + myRelease + '</div>' +
+            '<div class="row_parent" ' + cssRow_Parent + '><span style="color:#ff6600">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
+            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Node:</span> ' + myNode + '</div>' +
+            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Release:</span> ' + myRelease + '</div>' +
             '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">QRWP:</span> ' + myQRWP + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">OBN (PE Only):</span> ' + myOBN + '</div>' +
-            '<div class="row_normal_last" ' + cssRow_Normal_Last + '><span style="color:#ff6600">Owner:</span> ' + myOwner + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">OBN:</span> ' + myOBN + '</div>' +
+            '<div class="row_normal_last" ' + cssRow_Normal + '><span style="color:#ff6600">Owner:</span> ' + myOwner + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal_Last + '><span style="color:#ff6600">T-Shirt Size:</span> ' + myEstimate + '</div>' +
             '<div class="row_colour" ' + cssRow_Colour + '>&nbsp;</div>' +
             '</div>' +
             '</div>';
@@ -94,12 +235,12 @@
         if (Math.ceil((cardNum + 1) % 4) === 0) {
             theMarkup = theMarkup + '<div class=pb></div>';
         } else if (cardNum === totalCards - 1) {
-            theMarkup = theMarkup + '<div class=cb '+cssClearBoth+'>&nbsp;</div>';
+            theMarkup = theMarkup + '<div class=cb ' + cssClearBoth + '>&nbsp;</div>';
         }
         return theMarkup;
     },
     _print: function (data) {
-        var title, options, printWindow, doc, cardMarkup;
+        var title, options, printWindow, doc;
         title = 'Print Cards';
         options = "toolbar=0,menubar=0,scrollbars=yes,scrolling=yes,resizable=yes,width=1000,height=500";
         printWindow = window.open('', title, options);
@@ -112,6 +253,102 @@
         printWindow.print();
         return false;
     },
+    // Fits our text into the diaplay panel take the string and the length you want to cut by then adds ... if the string breaches the limit
+    _shortenString: function (string, stringLength) {
+        //console.log('_shortenString:', string, stringLength);
+        var output;
+        if (string.length > stringLength) {
+            output = string.substring(stringLength, length) + ' ...';
+        } else {
+            output = string;
+        }
+        return output;
+    },
+    _checkMissing: function (portfolioType, item) {
+        //console.log('_checkMissing :', portfolioType);
+        var output, f1, f2, f3, f4, f5;
+        f1 = MySharedData.portfolioType[0];
+        f2 = MySharedData.portfolioType[1];
+        f3 = MySharedData.portfolioType[2];
+        f4 = MySharedData.portfolioType[3];
+        f5 = MySharedData.portfolioType[4];
+        // Strategic Objective
+        if (portfolioType === f1) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Top Level';
+            }
+        }
+        // Portfolio Objective
+        if (portfolioType === f2) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        //Portfolio Epic
+        if (portfolioType === f3) {
+            if (item === 'OBN') {
+                output = 'Missing';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        // Business Outcome
+        if (portfolioType === f4) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Assigned';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Assigned';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        // Feature
+        if (portfolioType === f5) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Assigned';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Assigned';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        return output;
+    }
 });
                 Ext.define('App.version', {
     constructor: function () {
@@ -121,17 +358,21 @@
 });
                 Ext.define('MySharedData', {
     singleton: true,
-
     printHtml: '',
+    supportArray: [],
+    // Needs automating!
+    portfolioType: ['PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
 });
-
 Ext.define('PrintApp', {
     extend: 'Rally.app.App',
-    componentCls: 'app',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
-    theGrid: undefined,
-    printHtml: null,
 
+    printHtml: null,
     theFetch: ['FormattedID',
         'Name',
         'Project',
@@ -141,19 +382,20 @@ Ext.define('PrintApp', {
         'State',
         'PreliminaryEstimate',
         'Parent',
-        'ActualStartDate',
-        'ActualEndDate',
-        'PlannedStartDate',
-        'PlannedEndDate',
         'Release',
         'c_QRWP',
+        '_type',
         'PortfolioItemType',
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
-        var theVersion = Ext.create('App.version');
-        console.log(Ext.create('App.version'));
         var me = this;
+        var xData1 = this.getContext().getUser();
+        var xData2 = this.getContext().getProject();
+        var xData3 = this.getContext().getWorkspace();
+        var xData4 = this.getContext().getSubscription();
+        var gEpros = App.Emailer; // shorten global property string
+        var gRpros = App.Runtime; // shorten global property string
         var layout = Ext.create('Ext.container.Container', {
             layout: 'fit',
             align: 'stretch',
@@ -190,27 +432,7 @@ Ext.define('PrintApp', {
                         },
                         scope: me
                     }
-                },
-                /* {
-                    xtype: 'rallysearchfield',
-                    itemId: 'search-field', // we'll use this item ID later to get the users' selection
-                    fieldLabel: 'Select',
-                    labelAlign: 'left',
-                    id: 'search-field',
-                    width: 300,
-                    margin: '7 5 5 20',
-
-                    listeners: {
-                        add: function () {
-                            console.log('Added Search');
-                        },
-                        scope: me
-                    }
-                    
-                }, */{
-
-
-
+                }, {
                     xtype: 'button',
                     text: 'Print Results',
                     margin: '5 5 5 20',
@@ -218,6 +440,19 @@ Ext.define('PrintApp', {
                     listeners: {
                         add: function () {
                             console.log('Added Button');
+                        },
+                        scope: me
+                    }
+                }, {
+                    xtype: 'button',
+                    text: 'Support',
+                    margin: '5 5 5 20',
+                    handler: this._getPrint,
+                    listeners: {
+                        afterrender: function (v) {
+                            v.el.on('click', function () {
+                                var email = new gEpros._emailer(MySharedData.supportArray,xData1, xData2, xData3, xData4);
+                            });
                         },
                         scope: me
                     }
@@ -248,16 +483,10 @@ Ext.define('PrintApp', {
         layout.myHtml = 'Searching...';
         this.add(layout);
     },
-
     _kickoff: function () {
-        var myHtml = 'Searching...';
-        //console.log(Ext.fly('myTarget').update(myHtml));
         this._loadData();
-        //this.win
         console.log(Ext.fly('myTarget'));
-        //this.
     },
-
     _getFilters: function (value) {
         var theFilter = Ext.create('Rally.data.wsapi.Filter', {
             property: 'PortfolioItemType',
@@ -266,17 +495,14 @@ Ext.define('PrintApp', {
         });
         return theFilter;
     },
-    _loadData: function (viewport) {
+    _loadData: function () {
         var me = this;
         var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
-        //var selectedItem = this.down('#portfolio-combobox').getRecord().get('_ref'); // the _ref is unique, unlike the iteration name that can change; lets query on it instead!
         var myFilter = this._getFilters(selectedItem);
-        // if store exists, just load new data
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
             console.log('Reloading Store');
-            // create store
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
@@ -284,11 +510,9 @@ Ext.define('PrintApp', {
                 filters: myFilter,
                 type: 'PortfolioItem',
                 listeners: {
-                    load: function (myStore, myData, success) {
-                        if (!me.theGrid) { // only create a grid if it does NOT already exist
-                            //console.log(myData);
-                            me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        }
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
@@ -297,22 +521,15 @@ Ext.define('PrintApp', {
         }
     },
     _createResults: function (myData) {
+        MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.card')._build(x, myData.length, myData[x]);
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
         MySharedData.printHtml = html;
-        html = '';
-        myData = '';
-        console.log('END');
     },
-    _getPrint: function () {
-        var printHtml = null;
-        printHtml += Ext.create('App.card')._print(MySharedData.printHtml);
-        return printHtml;
-    }
 });
 
             Rally.launchApp('PrintApp', {
@@ -341,30 +558,6 @@ Ext.define('PrintApp', {
     /* page-break-before: always; */
     /* clear: both; */
   }
-}
-#buttonDiv,
-#iterationDropdown {
-  display: inline;
-}
-#interface,
-#printSection {
-  margin: 20px;
-}
-#interface {
-  position: absolute;
-  top: 5px;
-}
-html {
-  background-color: #fff;
-  color: #000;
-  font: 14pt / 1.26 Arial, Helvetica, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-body {
-  background-color: #fff;
-  margin: 0;
-  padding: 0;
 }
 
     </style>

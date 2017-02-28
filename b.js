@@ -122,7 +122,7 @@ Ext.define('PrintApp', {
     },
 
     _getFilters: function (value) {
-        var theFilter = Ext.create('Rally.data.wsapi.Filter', {
+        var theFilter = Ext.create('Rally.data.raw.wsapi.Filter', {
             property: 'PortfolioItemType',
             operation: '=',
             value: value
@@ -141,7 +141,7 @@ Ext.define('PrintApp', {
             console.log('Store');
             // create store
         } else {
-            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
+            me.theStore = Ext.create('Rally.data.raw.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
                 autoLoad: true, // <----- Don't forget to set this to true! heh
                 filters: myFilter,
@@ -161,7 +161,7 @@ Ext.define('PrintApp', {
     },
     _createResults: function (myData) {
         html = '<div>';
-        for (var x = 0; x < myData.length; x++) {
+        for (var x = 0; x < mydata.raw.length; x++) {
             //console.log('loop');
             html += '<div>' + myData[x].raw._refObjectName + '</div>';
         }

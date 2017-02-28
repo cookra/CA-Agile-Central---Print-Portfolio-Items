@@ -1,16 +1,20 @@
 Ext.define('MySharedData', {
     singleton: true,
-
     printHtml: '',
+    supportArray: [],
+    // Needs automating!
+    portfolioType: ['PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
 });
-
 Ext.define('PrintApp', {
     extend: 'Rally.app.App',
-    componentCls: 'app',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
-    theGrid: undefined,
-    printHtml: null,
 
+    printHtml: null,
     theFetch: ['FormattedID',
         'Name',
         'Project',
@@ -20,19 +24,20 @@ Ext.define('PrintApp', {
         'State',
         'PreliminaryEstimate',
         'Parent',
-        'ActualStartDate',
-        'ActualEndDate',
-        'PlannedStartDate',
-        'PlannedEndDate',
         'Release',
         'c_QRWP',
+        '_type',
         'PortfolioItemType',
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
-        var theVersion = Ext.create('App.version');
-        console.log(Ext.create('App.version'));
         var me = this;
+        var xData1 = this.getContext().getUser();
+        var xData2 = this.getContext().getProject();
+        var xData3 = this.getContext().getWorkspace();
+        var xData4 = this.getContext().getSubscription();
+        var gEpros = App.Emailer; // shorten global property string
+        var gRpros = App.Runtime; // shorten global property string
         var layout = Ext.create('Ext.container.Container', {
             layout: 'fit',
             align: 'stretch',
@@ -69,27 +74,7 @@ Ext.define('PrintApp', {
                         },
                         scope: me
                     }
-                },
-                /* {
-                    xtype: 'rallysearchfield',
-                    itemId: 'search-field', // we'll use this item ID later to get the users' selection
-                    fieldLabel: 'Select',
-                    labelAlign: 'left',
-                    id: 'search-field',
-                    width: 300,
-                    margin: '7 5 5 20',
-
-                    listeners: {
-                        add: function () {
-                            console.log('Added Search');
-                        },
-                        scope: me
-                    }
-                    
-                }, */{
-
-
-
+                }, {
                     xtype: 'button',
                     text: 'Print Results',
                     margin: '5 5 5 20',
@@ -97,6 +82,19 @@ Ext.define('PrintApp', {
                     listeners: {
                         add: function () {
                             console.log('Added Button');
+                        },
+                        scope: me
+                    }
+                }, {
+                    xtype: 'button',
+                    text: 'Support',
+                    margin: '5 5 5 20',
+                    handler: this._getPrint,
+                    listeners: {
+                        afterrender: function (v) {
+                            v.el.on('click', function () {
+                                var email = new gEpros._emailer(MySharedData.supportArray,xData1, xData2, xData3, xData4);
+                            });
                         },
                         scope: me
                     }
@@ -127,16 +125,10 @@ Ext.define('PrintApp', {
         layout.myHtml = 'Searching...';
         this.add(layout);
     },
-
     _kickoff: function () {
-        var myHtml = 'Searching...';
-        //console.log(Ext.fly('myTarget').update(myHtml));
         this._loadData();
-        //this.win
         console.log(Ext.fly('myTarget'));
-        //this.
     },
-
     _getFilters: function (value) {
         var theFilter = Ext.create('Rally.data.wsapi.Filter', {
             property: 'PortfolioItemType',
@@ -145,17 +137,14 @@ Ext.define('PrintApp', {
         });
         return theFilter;
     },
-    _loadData: function (viewport) {
+    _loadData: function () {
         var me = this;
         var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
-        //var selectedItem = this.down('#portfolio-combobox').getRecord().get('_ref'); // the _ref is unique, unlike the iteration name that can change; lets query on it instead!
         var myFilter = this._getFilters(selectedItem);
-        // if store exists, just load new data
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
             console.log('Reloading Store');
-            // create store
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
@@ -163,11 +152,9 @@ Ext.define('PrintApp', {
                 filters: myFilter,
                 type: 'PortfolioItem',
                 listeners: {
-                    load: function (myStore, myData, success) {
-                        if (!me.theGrid) { // only create a grid if it does NOT already exist
-                            //console.log(myData);
-                            me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        }
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
@@ -176,20 +163,13 @@ Ext.define('PrintApp', {
         }
     },
     _createResults: function (myData) {
+        MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.card')._build(x, myData.length, myData[x]);
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
         MySharedData.printHtml = html;
-        html = '';
-        myData = '';
-        console.log('END');
     },
-    _getPrint: function () {
-        var printHtml = null;
-        printHtml += Ext.create('App.card')._print(MySharedData.printHtml);
-        return printHtml;
-    }
 });
