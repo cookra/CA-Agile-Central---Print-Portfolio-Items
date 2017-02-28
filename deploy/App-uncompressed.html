@@ -7,51 +7,131 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                Ext.define('app.Layout', {
-    constructor: function () {
-        console.log('Added Viewport');
-        var viewport = Ext.create('Ext.container.Viewport', {
-            layout: 'border',
-            id: 'nutts',                 
-            items: [{
-                    region: 'north',
-                    xtype: 'panel',
-                    itemId: 'north',
-                    id: 'viewPortnorth',
-                    height: 40,
-                    minHeight: 40,
-                }, {
-                    region: 'center',
-                    xtype: 'container',
-                    itemId: 'center',
-                    id: 'viewPortCenter',
-                    autoScroll: true,
-                    
-                    listeners: {
-                        afterrender: function(){
-                            console.log('loaded');
-                        }
-                    }
-                },
-                {
-                    region: 'south',
-                    xtype: 'panel',
-                    itemId: 'south',
-                    id: 'viewPortSouth',
-                    height: 120,
-                    minHeight: 120,
-                }
-            ]
-        });
-        return viewport;
-    },
+                Ext.define('App.card', {
+    theMarkup: null,
+    _build: function (cardNum, totalCards, data) {
+        // Validators
+        if (data.raw.Release === undefined || !data.raw.Release) {
+            myRelease = "No Release";
+        } else {
+            myRelease = data.raw.Release.Name;
+        }
+        if (!data.raw.c_QRWP) {
+            var myQRWP = "No QRWP";
+        } else {
+            var myQRWP = data.raw.Project.c_QRWP;
+        }
+        if (!data.raw.c_OBN) {
+            var myOBN = "No OBN";
+        } else {
+            var myOBN = data.raw.Project.c_OBN;
+        }
+        if (!data.raw.DisplayColor) {
+            var myColour = "#ff6600";
+        } else {
+            var myColour = data.raw.DisplayColor;
+        }
+        if (!data.raw.Project) {
+            var myNode = "No Team Assigned";
+        } else {
+            var myNode = data.raw.Project.Name;
+        }
+        if (data.raw.Owner._refObjectName=== undefined || !data.raw.Owner._refObjectName) {
+            var myOwner = "No Owner Assigned";
+        } else {
+            var myOwner = data.raw.Owner._refObjectName;
+        }
+        if (!data.raw.Parent) {
+            console.log('-');
+            var myParentID = "Top Level / Missing?";
+            var myParentIDName = "";
+        } else {
+            console.log('+');
+            var myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
+            var myParentIDName = data.raw.Parent.Name;
 
+        }
+        if (data.raw.PreliminaryEstimate) {
+            var myEstimate = data.raw.PreliminaryEstimate.Name;
+        } else if (data.raw.PlanEstimate) {
+            var myEstimate = data.raw.PlanEstimate;
+        } else if (data.raw.Estimate) {
+            var myEstimate = data.raw.Estimate;
+        } else {
+            var myEstimate = "Not Sized";
+        }
+        // No validation needed as these are constant across all levels of the portfolio
+        var myId = data.raw.FormattedID;
+        var myName = data.raw._refObjectName;
+        // NASTY HACK FOR ExtJS (Inline CSS builds) //
+        var cssStyleTag_Start = ' style="';
+        var cssStyleTag_End = '"';
+        var cssCropmarks = cssStyleTag_Start + 'border: 2px dashed #cccccc;padding: 10px;position: relative;float: left' + cssStyleTag_End;
+        var cssArtifacts = cssStyleTag_Start + 'border: 3px solid #000;width: 260px;white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
+        var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
+        var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:'+data.raw.DisplayColor+ cssStyleTag_End;
+        var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
+        var theMarkup =
+            '<div class="crop-marks" ' + cssCropmarks + '>' +
+            '<div class="artifact" ' + cssArtifacts + '>' +
+            '<div class="row_id" ' + cssRow_Id + '>' + myId + '</div>' +
+            '<div class="row_parent" ' + cssRow_Parent + '><span style="color:#ff6600">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
+            '<div class="row_name" ' + cssRow_Name + '><span style="color:#ff6600">Name:</span> ' + myName + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">T-Shirt Size:</span> ' + myEstimate + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">Node:</span> ' + myNode + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">Release:</span> ' + myRelease + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">QRWP:</span> ' + myQRWP + '</div>' +
+            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">OBN (PE Only):</span> ' + myOBN + '</div>' +
+            '<div class="row_normal_last" ' + cssRow_Normal_Last + '><span style="color:#ff6600">Owner:</span> ' + myOwner + '</div>' +
+            '<div class="row_colour" ' + cssRow_Colour + '>&nbsp;</div>' +
+            '</div>' +
+            '</div>';
+        // Printing Layout Shaper 2 x 2 cards
+        if (Math.ceil((cardNum + 1) % 4) === 0) {
+            theMarkup = theMarkup + '<div class=pb></div>';
+        } else if (cardNum === totalCards - 1) {
+            theMarkup = theMarkup + '<div class=cb '+cssClearBoth+'>&nbsp;</div>';
+        }
+        return theMarkup;
+    },
+    _print: function (data) {
+        var title, options, printWindow, doc, cardMarkup;
+        title = 'Print Cards';
+        options = "toolbar=0,menubar=0,scrollbars=yes,scrolling=yes,resizable=yes,width=1000,height=500";
+        printWindow = window.open('', title, options);
+        doc = printWindow.document;
+        doc.write('<html><head><title>Print Feature</title>');
+        doc.write('</head><body class="landscape" style="-webkit-print-color-adjust: exact;">');
+        doc.write(data);
+        doc.write('</body></html>');
+        doc.close();
+        printWindow.print();
+        return false;
+    },
 });
-                Ext.define('PrintApp', {
+                Ext.define('App.version', {
+    constructor: function () {
+        var theVersion = Ext.getVersion().version;
+        return theVersion;
+    }
+});
+                Ext.define('MySharedData', {
+    singleton: true,
+
+    printHtml: '',
+});
+
+Ext.define('PrintApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
     theGrid: undefined,
+    printHtml: null,
+
     theFetch: ['FormattedID',
         'Name',
         'Project',
@@ -65,30 +145,37 @@
         'ActualEndDate',
         'PlannedStartDate',
         'PlannedEndDate',
+        'Release',
         'c_QRWP',
         'PortfolioItemType',
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
+        var theVersion = Ext.create('App.version');
+        console.log(Ext.create('App.version'));
         var me = this;
-        var layout = Ext.create('Ext.panel.Panel', {
-            layout: 'vbox',
+        var layout = Ext.create('Ext.container.Container', {
+            layout: 'fit',
             align: 'stretch',
-            height: 'autoHeight',
-            pack: 'center',
+            height: '100%',
             layoutConfig: {
                 align: 'stretch',
             },
             items: [{
                 xtype: 'panel',
-                title: 'Header',
-                //width: '100%',
+                width: 300,
                 border: false,
-                layout: 'fit',
+                layout: 'hbox',
                 html: '',
                 id: 'myHeader',
                 itemId: 'header',
-                items: {
+                listeners: {
+                    add: function () {
+                        console.log('Added Panel');
+                    },
+                    scope: me
+                },
+                items: [{
                     xtype: 'rallyportfolioitemtypecombobox',
                     itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
                     fieldLabel: 'Select',
@@ -98,65 +185,77 @@
                     margin: '5 5 5 5',
                     listeners: {
                         select: function () {
-                            //me._loadData(this.win.down('center')); // user interactivity: when they choose a value, (re)load the data
-                            // console.log(' Change ', iterComboBox);
-                            me._test();
+                            console.log('Added Combo');
+                            me._kickoff();
                         },
                         scope: me
-                    },
-
+                    }
                 },
+                /* {
+                    xtype: 'rallysearchfield',
+                    itemId: 'search-field', // we'll use this item ID later to get the users' selection
+                    fieldLabel: 'Select',
+                    labelAlign: 'left',
+                    id: 'search-field',
+                    width: 300,
+                    margin: '7 5 5 20',
+
+                    listeners: {
+                        add: function () {
+                            console.log('Added Search');
+                        },
+                        scope: me
+                    }
+                    
+                }, */{
+
+
+
+                    xtype: 'button',
+                    text: 'Print Results',
+                    margin: '5 5 5 20',
+                    handler: this._getPrint,
+                    listeners: {
+                        add: function () {
+                            console.log('Added Button');
+                        },
+                        scope: me
+                    }
+                }],
             }, {
                 xtype: 'box',
                 id: 'myTarget',
                 autoScroll: true,
                 margin: '10 5 5 10',
                 width: '100%',
-                height: 'autoHeight',
                 style: {
                     borderTop: '1'
                 },
                 autoEl: {
                     tag: 'div',
-                    cls: 'title-bar',
+                    cls: 'myContent',
                     html: '',
                 },
                 listeners: {
-
-                    refresh: function () {
-                        column.autoSize();
+                    add: function () {
+                        console.log('Added Target');
                     },
+                    scope: me
                 },
                 flex: 1
             }]
         });
-        var win = Ext.create('Ext.window.Window', {
-            title: 'v1.0.0 Layout',
-            x: 0,
-            y: 0,
-            width: '100%',
-            height: '100%',
-            minWidth: 300,
-            minHeight: 60,
-            layout: 'fit',
-            items: layout,
-            draggable: false,
-            listeners: {
-                afterrender: function () {
-                    console.log('Loaded Window');
-                }
-            }
-        });
-        win.show();
-        //layout.body.update('sdasdfasdasdfasdfasd');
-        //this._addFetchType();
+        layout.myHtml = 'Searching...';
+        this.add(layout);
     },
 
-    _test: function () {
-
+    _kickoff: function () {
         var myHtml = 'Searching...';
-        Ext.fly('myTarget').update(myHtml);
+        //console.log(Ext.fly('myTarget').update(myHtml));
         this._loadData();
+        //this.win
+        console.log(Ext.fly('myTarget'));
+        //this.
     },
 
     _getFilters: function (value) {
@@ -176,7 +275,7 @@
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
-            console.log('Store');
+            console.log('Reloading Store');
             // create store
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
@@ -187,7 +286,7 @@
                 listeners: {
                     load: function (myStore, myData, success) {
                         if (!me.theGrid) { // only create a grid if it does NOT already exist
-                            console.log(myData);
+                            //console.log(myData);
                             me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
                         }
                     },
@@ -198,34 +297,22 @@
         }
     },
     _createResults: function (myData) {
-        html = '<div>';
+        var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            //console.log('loop');
-            html += '<div>' + myData[x].raw._refObjectName + '</div>';
+            html += Ext.create('App.card')._build(x, myData.length, myData[x]);
         }
         html += '</div>';
-
         Ext.fly('myTarget').update(html);
-        //Ext.fly('myTarget').setHeight('auto');
+        MySharedData.printHtml = html;
+        html = '';
+        myData = '';
+        console.log('END');
     },
-
-    _container: function (html) {
-        var viewport = Ext.create('Ext.container.Viewport', {
-            items: [{
-                region: 'center',
-                xtype: 'container',
-                itemId: 'center',
-                id: 'xxx',
-                width: '100%',
-                autoScroll: true,
-                html: html,
-                style: {
-                    color: 'black'
-                }
-            }, ]
-        });
-        return viewport;
-    },
+    _getPrint: function () {
+        var printHtml = null;
+        printHtml += Ext.create('App.card')._print(MySharedData.printHtml);
+        return printHtml;
+    }
 });
 
             Rally.launchApp('PrintApp', {
@@ -241,6 +328,43 @@
     <style type="text/css">
         .app {
   /* Add app styles here */
+}
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+  }
+  #interface {
+    display: none;
+  }
+  .artifact {
+    page-break-inside: avoid;
+    /* page-break-before: always; */
+    /* clear: both; */
+  }
+}
+#buttonDiv,
+#iterationDropdown {
+  display: inline;
+}
+#interface,
+#printSection {
+  margin: 20px;
+}
+#interface {
+  position: absolute;
+  top: 5px;
+}
+html {
+  background-color: #fff;
+  color: #000;
+  font: 14pt / 1.26 Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
 }
 
     </style>

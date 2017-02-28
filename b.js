@@ -21,25 +21,26 @@ Ext.define('PrintApp', {
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
+        var theVersion = Ext.create('App.version');
+        console.log(Ext.create('App.version'));
         var me = this;
-        var layout = Ext.create('Ext.panel.Panel', {
-            layout: 'vbox',
+        var layout = Ext.create('Ext.container.Container', {
+
+            layout: 'fit',
             align: 'stretch',
-            height: 'autoHeight',
-            pack: 'center',
+            height: '100%',
             layoutConfig: {
                 align: 'stretch',
             },
             items: [{
                 xtype: 'panel',
-                title: 'Header',
-                //width: '100%',
-                border: true,
-                layout: 'fit',
-                html: 'x',
+                width: 300,
+                border: false,
+                layout: 'hbox',
+                html: '',
                 id: 'myHeader',
                 itemId: 'header',
-                items: {
+                items: [{
                     xtype: 'rallyportfolioitemtypecombobox',
                     itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
                     fieldLabel: 'Select',
@@ -55,44 +56,43 @@ Ext.define('PrintApp', {
                         },
                         scope: me
                     },
+                }, {
+                    xtype: 'rallysearchfield',
+                    itemId: 'search-field', // we'll use this item ID later to get the users' selection
+                    fieldLabel: 'Select',
+                    labelAlign: 'left',
+                    id: 'search-field',
+                    width: 300,
+                    margin: '7 5 5 20',
 
-                },
+                    listeners: {
+                        click: function () {
+                            //me._loadData(this.win.down('center')); // user interactivity: when they choose a value, (re)load the data
+                            // console.log(' Change ', iterComboBox);
+                            //me._test();
+                            console.log('boom');
+                        },
+                        scope: me
+                    }
+                }],
             }, {
                 xtype: 'box',
                 id: 'myTarget',
                 autoScroll: true,
-                height: 'autoHeight',
+                margin: '10 5 5 10',
+                width: '100%',
+                style: {
+                    borderTop: '1'
+                },
                 autoEl: {
                     tag: 'div',
-                    cls: 'title-bar',
+                    cls: 'myContent',
                     html: '',
                 },
-                listeners: {
-
-                    refresh: function () {
-                        column.autoSize();
-                    },
-                },
                 flex: 1
-            }, {
-                xtype: 'panel',
-                title: 'Footer',
-                width: '100%',
-                border: true,
-                layout: 'fit',
-                height: 120,
-                html: 'x',
-                id: 'footer',
-                itemd: 'footer',
-                listeners: {
-                    afterrender: function () {
-                        console.log('Loaded Footer');
-                    }
-                }
             }]
         });
-        var win = Ext.create('Ext.window.Window', {
-            title: 'v1.0.0 Layout',
+        var win = Ext.create('Ext.container.Container', {
             x: 0,
             y: 0,
             width: '100%',
@@ -100,24 +100,25 @@ Ext.define('PrintApp', {
             minWidth: 300,
             minHeight: 60,
             layout: 'fit',
-            items: layout,
-            draggable: false,
             listeners: {
                 afterrender: function () {
                     console.log('Loaded Window');
                 }
             }
         });
-        win.show();
+        this.add(layout);
+        //win.show();
         //layout.body.update('sdasdfasdasdfasdfasd');
         //this._addFetchType();
     },
 
     _test: function () {
-
         var myHtml = 'Searching...';
-        Ext.fly('myTarget').update(myHtml);
+        //console.log(Ext.fly('myTarget').update(myHtml));
         this._loadData();
+        //this.win
+        console.log(Ext.fly('myTarget'));
+        //this.
     },
 
     _getFilters: function (value) {
@@ -165,7 +166,7 @@ Ext.define('PrintApp', {
             html += '<div>' + myData[x].raw._refObjectName + '</div>';
         }
         html += '</div>';
-
+        //this.add(html);
         Ext.fly('myTarget').update(html);
         //Ext.fly('myTarget').setHeight('auto');
     },
@@ -177,6 +178,7 @@ Ext.define('PrintApp', {
                 xtype: 'container',
                 itemId: 'center',
                 id: 'xxx',
+                width: '100%',
                 autoScroll: true,
                 html: html,
                 style: {
