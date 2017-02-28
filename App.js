@@ -3,7 +3,7 @@ Ext.define('MySharedData', {
     printHtml: '',
     supportArray: [],
     // Needs automating!
-    portfolioType: ['PortfolioItem/BUStrategicObjectives',
+    portfolioType: ['PortfolioItem/BUStrategi""cObjectives',
         'PortfolioItem/STPortfolioObjectives',
         'PortfolioItem/PortfolioEpic',
         'PortfolioItem/BusinessOutcome',
