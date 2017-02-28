@@ -4,6 +4,8 @@
     "server": "https://rally1.rallydev.com",
     "sdk": "2.1",
     "javascript": [
+        "App/card.js",
+        "App/version.js",
         "App.js"
     ],
     "css": [
