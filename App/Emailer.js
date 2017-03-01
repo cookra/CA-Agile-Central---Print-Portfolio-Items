@@ -4,6 +4,7 @@ Ext.define('App.Emailer', {
         console.log('Config added: c Email');
     },
     _emailer: function (coreData, xData1, xData2, xData3, xData4) {
+        console.log('@ _emailer');
         var gProp = App.Runtime;
         var PcontactSubject = 'REF: AC APP ';
         var PcontactMessage = '=========== Please leave your message above this line ==========';
@@ -47,10 +48,6 @@ Ext.define('App.Emailer', {
         var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
         var message = PcontactMessage;
         var report = '';
-        console.log('xData1 Array = ', xData1);
-        console.log('xData2 Array = ', xData2);
-        console.log('xData3 Array = ', xData3);
-        console.log('xData4 Array = ', xData4);
 
         report += charReturn + charReturn;
         report += 'Environment Report > ' + charReturn;
@@ -91,7 +88,8 @@ Ext.define('App.Emailer', {
         for (var x = 0; x < userData.length; x++) {
             report += userData[x] + charReturn;
         }
-        report = encodeURIComponent(report);
+        report = encodeURIComponent(report);      
+         console.log('@ _emailer Launch Email App');
         return window.location = 'mailto:' + PcontactEmail + '?subject=' + subject + '&body=' + message + report;
     },
 });

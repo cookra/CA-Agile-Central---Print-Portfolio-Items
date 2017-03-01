@@ -14,7 +14,7 @@ Ext.define('App.Runtime', {
 
     },
     constructor: function (config) {
-        console.log('c config.Runtime f constructor');
+        console.log('Runtime Class Saying Hi! - I hold details about this App - Version, Owner, ID etc..');
         var me = this;
         me.initConfig(config);
     },
