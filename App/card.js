@@ -32,20 +32,20 @@ Ext.define('App.Card', {
             myColour = "#ff6600";
         }
         if (data.raw.Project) {
-            myNode = this._shortenString(data.raw.Project.Name, 50, data.raw._type);
+            myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type);
         } else {
             myNode = "No Team Assigned";
         }
         if (data.raw.Release === undefined || !data.raw.Release) {
             myRelease = this._checkMissing(data.raw._type, 'Release');
         } else {
-            myRelease = this._shortenString(data.raw.Release.Name, 50, data.raw._type);
+            myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type);
         }
 
         if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
             myQRWP = this._checkMissing(data.raw._type, 'QRWP');
         } else {
-            myQRWP = this._shortenString(data.raw.c_QRWP, 50, data.raw._type);
+            myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type);
         }
         if (data.raw.Parent) {
             myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
@@ -84,7 +84,7 @@ Ext.define('App.Card', {
         var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
         var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:50px;' + cssStyleTag_End;
+        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
         var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;

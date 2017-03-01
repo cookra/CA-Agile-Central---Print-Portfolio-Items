@@ -82,6 +82,8 @@ Ext.define('PrintApp', {
                     listeners: {
                         add: function () {
                             console.log('Added Button');
+                            console.log('Print Trigger @ Button');
+
                         },
                         scope: me
                     }
@@ -93,7 +95,8 @@ Ext.define('PrintApp', {
                     listeners: {
                         afterrender: function (v) {
                             v.el.on('click', function () {
-                                var email = new gEpros._emailer(MySharedData.supportArray,xData1, xData2, xData3, xData4);
+                                var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                console.log('Email Trigger @ Button');
                             });
                         },
                         scope: me
@@ -172,4 +175,10 @@ Ext.define('PrintApp', {
         Ext.fly('myTarget').update(html);
         MySharedData.printHtml = html;
     },
+    _getPrint: function () {
+        var printHtml = null;
+        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        return printHtml;
+    }
+
 });
