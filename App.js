@@ -10,10 +10,10 @@ Ext.define('MySharedData', {
         'PortfolioItem/Feature',
     ], // Portfolio Types
 });
+
 Ext.define('PrintApp', {
     extend: 'Rally.app.App',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
-
     printHtml: null,
     theFetch: ['FormattedID',
         'Name',
@@ -55,7 +55,7 @@ Ext.define('PrintApp', {
                 itemId: 'header',
                 listeners: {
                     add: function () {
-                        console.log('Added Panel');
+                        console.log('@ Launch Added Panel');
                     },
                     scope: me
                 },
@@ -69,7 +69,7 @@ Ext.define('PrintApp', {
                     margin: '5 5 5 5',
                     listeners: {
                         select: function () {
-                            console.log('Added Combo');
+                            console.log('@ Launch Added Portfolio Combobox');
                             me._kickoff();
                         },
                         scope: me
@@ -81,8 +81,7 @@ Ext.define('PrintApp', {
                     handler: this._getPrint,
                     listeners: {
                         add: function () {
-                            console.log('Added Button');
-                            console.log('Print Trigger @ Button');
+                            console.log('@ Launch Added Print Button');
 
                         },
                         scope: me
@@ -96,7 +95,7 @@ Ext.define('PrintApp', {
                         afterrender: function (v) {
                             v.el.on('click', function () {
                                 var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                console.log('Email Trigger @ Button');
+                                console.log('@ Launch Added Support Button');
                             });
                         },
                         scope: me
@@ -118,21 +117,21 @@ Ext.define('PrintApp', {
                 },
                 listeners: {
                     add: function () {
-                        console.log('Added Target');
+                        console.log('@ Launch Added Content Box');
                     },
                     scope: me
                 },
                 flex: 1
             }]
         });
-        layout.myHtml = 'Searching...';
         this.add(layout);
     },
     _kickoff: function () {
         this._loadData();
-        console.log(Ext.fly('myTarget'));
+        console.log('@ _kickoff going to _loadData');
     },
     _getFilters: function (value) {
+        console.log('@ _getFilters returning [value] to _loadData');
         var theFilter = Ext.create('Rally.data.wsapi.Filter', {
             property: 'PortfolioItemType',
             operation: '=',
@@ -141,13 +140,15 @@ Ext.define('PrintApp', {
         return theFilter;
     },
     _loadData: function () {
+        console.log('@ _loadData working the store magic..');
+        this._mask("Going deep, searching...");
         var me = this;
         var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
         var myFilter = this._getFilters(selectedItem);
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
-            console.log('Reloading Store');
+            console.log('@ _loadData We have been here already, using load() to fetch new data');
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
@@ -158,15 +159,19 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                        console.log('@ _loadData load() fired going to _createResults');
 
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
                 fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
             });
+            console.log('@ _loadData New store request');
+
         }
     },
     _createResults: function (myData) {
+        console.log('@ _createResults Building HTML based on [myData] passed by the store');
         MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
@@ -174,12 +179,32 @@ Ext.define('PrintApp', {
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
+        console.log('@ _createResults Destroying the loading mask');
+        this._unmask();
         MySharedData.printHtml = html;
     },
     _getPrint: function () {
+        console.log('@ _getPrint Print requested');
         var printHtml = null;
         printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
         return printHtml;
-    }
-
+    },
+    _mask: function (message) {
+        console.log('@ _mask We are loading the store, show the spinner');
+        //this.logger.log("Mask: ", message);
+        if (this.sparkler) {
+            this.sparkler.destroy();
+        }
+        this.sparkler = new Ext.LoadMask(this, {
+            msg: message
+        });
+        this.sparkler.show();
+        //Ext.fly('myTarget').update(this.sparkler.show());
+    },
+    _unmask: function () {
+        console.log('@ _unmask We have the data so destroy the spinner');
+        if (this.sparkler) {
+            this.sparkler.hide();
+        }
+    },
 });

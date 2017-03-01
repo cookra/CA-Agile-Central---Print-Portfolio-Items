@@ -1,6 +1,7 @@
 Ext.define('App.Card', {
     theMarkup: null,
     _build: function (cardNum, totalCards, data) {
+        console.log('Card Class Saying Hi! - I build the output HTML for displaying and printing');
         var myRelease, myQRWP, myOBN, myColour, myNode, myParentID, myParentIDName, myEstimate, myName, myOwner, myId;
 
 
@@ -22,8 +23,10 @@ Ext.define('App.Card', {
         // @Scenario 4: Feature
         // No OBN
         if (data.raw.c_OrderBookNumberOBN) {
+            console.log('@Card OBN Filter (found) sending to _shortenString ',myOBN);
             myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type);
         } else {
+            console.log('@Card OBN Filter (not found) checking if needed with this item');
             myOBN = this._checkMissing(data.raw._type, 'OBN');
         }
         if (data.raw.DisplayColor) {

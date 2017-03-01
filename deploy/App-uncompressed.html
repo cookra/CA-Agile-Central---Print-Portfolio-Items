@@ -368,10 +368,10 @@
         'PortfolioItem/Feature',
     ], // Portfolio Types
 });
+
 Ext.define('PrintApp', {
     extend: 'Rally.app.App',
     theStore: undefined, // app level references to the store and grid for easy access in various methods
-
     printHtml: null,
     theFetch: ['FormattedID',
         'Name',
@@ -483,7 +483,6 @@ Ext.define('PrintApp', {
                 flex: 1
             }]
         });
-        layout.myHtml = 'Searching...';
         this.add(layout);
     },
     _kickoff: function () {
@@ -499,9 +498,11 @@ Ext.define('PrintApp', {
         return theFilter;
     },
     _loadData: function () {
+        this._mask("Doing some stuff...");
         var me = this;
         var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
         var myFilter = this._getFilters(selectedItem);
+        this._mask("Doing some stuff...");
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
@@ -513,6 +514,7 @@ Ext.define('PrintApp', {
                 filters: myFilter,
                 limit: Infinity,
                 type: 'PortfolioItem',
+
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
@@ -532,13 +534,30 @@ Ext.define('PrintApp', {
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
+        this._unmask();
         MySharedData.printHtml = html;
     },
     _getPrint: function () {
         var printHtml = null;
         printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
         return printHtml;
-    }
+    },
+    _mask: function (message) {
+        //this.logger.log("Mask: ", message);
+        if (this.sparkler) {
+            this.sparkler.destroy();
+        }
+        this.sparkler = new Ext.LoadMask(this, {
+            msg: message
+        });
+        this.sparkler.show();
+        //Ext.fly('myTarget').update(this.sparkler.show());
+    },
+    _unmask: function () {
+        if (this.sparkler) {
+            this.sparkler.hide();
+        }
+    },
 
 });
 
