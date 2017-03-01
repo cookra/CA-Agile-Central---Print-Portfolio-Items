@@ -153,6 +153,7 @@ Ext.define('PrintApp', {
                 model: 'PortfolioItem',
                 autoLoad: true, // <----- Don't forget to set this to true! heh
                 filters: myFilter,
+                limit: Infinity,
                 type: 'PortfolioItem',
                 listeners: {
                     load: function (myStore, myData) {

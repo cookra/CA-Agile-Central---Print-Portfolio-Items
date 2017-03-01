@@ -159,20 +159,20 @@
             myColour = "#ff6600";
         }
         if (data.raw.Project) {
-            myNode = this._shortenString(data.raw.Project.Name, 50, data.raw._type);
+            myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type);
         } else {
             myNode = "No Team Assigned";
         }
         if (data.raw.Release === undefined || !data.raw.Release) {
             myRelease = this._checkMissing(data.raw._type, 'Release');
         } else {
-            myRelease = this._shortenString(data.raw.Release.Name, 50, data.raw._type);
+            myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type);
         }
 
         if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
             myQRWP = this._checkMissing(data.raw._type, 'QRWP');
         } else {
-            myQRWP = this._shortenString(data.raw.c_QRWP, 50, data.raw._type);
+            myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type);
         }
         if (data.raw.Parent) {
             myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
@@ -211,7 +211,7 @@
         var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
         var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:50px;' + cssStyleTag_End;
+        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
         var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
@@ -361,7 +361,7 @@
     printHtml: '',
     supportArray: [],
     // Needs automating!
-    portfolioType: ['PortfolioItem/BUStrategicObjectives',
+    portfolioType: ['PortfolioItem/BUStrategi""cObjectives',
         'PortfolioItem/STPortfolioObjectives',
         'PortfolioItem/PortfolioEpic',
         'PortfolioItem/BusinessOutcome',
@@ -440,6 +440,8 @@ Ext.define('PrintApp', {
                     listeners: {
                         add: function () {
                             console.log('Added Button');
+                            console.log('Print Trigger @ Button');
+
                         },
                         scope: me
                     }
@@ -451,7 +453,8 @@ Ext.define('PrintApp', {
                     listeners: {
                         afterrender: function (v) {
                             v.el.on('click', function () {
-                                var email = new gEpros._emailer(MySharedData.supportArray,xData1, xData2, xData3, xData4);
+                                var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                console.log('Email Trigger @ Button');
                             });
                         },
                         scope: me
@@ -508,6 +511,7 @@ Ext.define('PrintApp', {
                 model: 'PortfolioItem',
                 autoLoad: true, // <----- Don't forget to set this to true! heh
                 filters: myFilter,
+                limit: Infinity,
                 type: 'PortfolioItem',
                 listeners: {
                     load: function (myStore, myData) {
@@ -530,6 +534,12 @@ Ext.define('PrintApp', {
         Ext.fly('myTarget').update(html);
         MySharedData.printHtml = html;
     },
+    _getPrint: function () {
+        var printHtml = null;
+        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        return printHtml;
+    }
+
 });
 
             Rally.launchApp('PrintApp', {
