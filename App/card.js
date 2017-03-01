@@ -1,7 +1,9 @@
 Ext.define('App.Card', {
     theMarkup: null,
     _build: function (cardNum, totalCards, data) {
-        console.log('Card Class Saying Hi! - I build the output HTML for displaying and printing');
+        console.log('===== @Card Happy Birthday!');
+        console.log('@Card Class Saying Hi! - I build the output HTML for displaying and printing');
+        console.log('=====');
         var myRelease, myQRWP, myOBN, myColour, myNode, myParentID, myParentIDName, myEstimate, myName, myOwner, myId;
 
 
@@ -22,59 +24,117 @@ Ext.define('App.Card', {
         // No OBN
         // @Scenario 4: Feature
         // No OBN
+
+
+
+        //========================================================================================================================================================================
+        //
+        // OBN
+        //
         if (data.raw.c_OrderBookNumberOBN) {
-            console.log('@Card OBN Filter (found) sending to _shortenString ',myOBN);
-            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type);
+            console.log('@Card Filter [ OBN ] > (found) sending to _shortenString ', data.raw.c_OrderBookNumberOBN);
+            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type, 'OBN');
         } else {
-            console.log('@Card OBN Filter (not found) checking if needed with this item');
+            console.log('@Card Filter [ OBN ] > (not found) checking if needed with this item _checkMissing ');
             myOBN = this._checkMissing(data.raw._type, 'OBN');
         }
+        //========================================================================================================================================================================
+        //
+        // COLOUR
+        //
         if (data.raw.DisplayColor) {
+            console.log('@Card Filter [ Colour ] > (found) ', data.raw.DisplayColor);
             myColour = data.raw.DisplayColor;
         } else {
+            console.log('@Card Filter [ Colour ] > (not found) NOT POSSIBLE!!! Colour set to #ff6600');
+            console.log('=====');
             myColour = "#ff6600";
         }
+        //========================================================================================================================================================================
+        //
+        // PROJECT
+        //
         if (data.raw.Project) {
-            myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type);
+            console.log('@Card Filter [ Project ] > (found) sending to _shortenString ', data.raw.Project.Name);
+            myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type, 'Project');
         } else {
-            myNode = "No Team Assigned";
+            console.log('@Card Filter [ Project ] > (not found) NOT POSSIBLE!!! No Node Assigned');
+            myNode = "No Node Assigned";
         }
+        //========================================================================================================================================================================
+        //
+        // RELEASE
+        //
         if (data.raw.Release === undefined || !data.raw.Release) {
+            console.log('@Card Filter [ Release ] > (not found) cheking if needed with this item _checkMissing');
             myRelease = this._checkMissing(data.raw._type, 'Release');
         } else {
-            myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type);
+            console.log('@Card Filter [ Release ] > (found) sending to _shortenString ', data.raw.Release);
+            myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type, 'Release');
         }
-
+        //========================================================================================================================================================================
+        //
+        // QRWP
+        //
         if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
+            console.log('@Card Filter [ QRWP ] > (not found) cheking if needed with this item _checkMissing');
             myQRWP = this._checkMissing(data.raw._type, 'QRWP');
         } else {
-            myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type);
+            console.log('@Card Filter [ QRWP ] > (found) sending to _shortenString ', data.raw.c_QRWP);
+            myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type, 'QRWP');
         }
+        //========================================================================================================================================================================
+        //
+        // PARENT
+        //
         if (data.raw.Parent) {
+            console.log('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
             myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
-            myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type);
+            myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type, 'Parent');
         } else {
+            console.log('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
             myParentIDName = "";
             myParentID = this._checkMissing(data.raw._type, 'Parent');
         }
+        //========================================================================================================================================================================
+        //
+        // ESTIMATE
+        //
         if (data.raw.PreliminaryEstimate) {
+            console.log('@Card Filter [ Estimate ] > (found) A sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PreliminaryEstimate.Name;
         } else if (data.raw.PlanEstimate) {
+            console.log('@Card Filter [ Estimate ] > (found) B sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PlanEstimate;
         } else if (data.raw.Estimate) {
+            console.log('@Card Filter [ Estimate ] > (found) C sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.Estimate;
         } else {
-            myEstimate = "Missing";
+            console.log('@Card Filter [ Estimate ] > (Not Found) Not Sized');
+            console.log('=====');
+            myEstimate = "Not Sized";
         }
+        //========================================================================================================================================================================
+        //
+        // NAME
+        //
         if (data.raw._refObjectName) {
-            myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type);
+            console.log('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
+            myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type, 'Name');
         } else {
+            console.log('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
             myName = 'No Name';
 
         }
+        //========================================================================================================================================================================
+        //
+        // OWNER
+        //
         if (data.raw.Owner) {
-            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50, data.raw._type);
+            console.log('@Card Filter [ Owner ] > (found) sending to _shortenString ', data.raw.Owner._refObjectName);
+            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50, data.raw._type, 'Owner');
         } else {
+            console.log('@Card Filter [ Owner ] > (Not Found) No Owner');
             myOwner = 'No Owner';
 
         }
@@ -113,6 +173,7 @@ Ext.define('App.Card', {
         } else if (cardNum === totalCards - 1) {
             theMarkup = theMarkup + '<div class=cb ' + cssClearBoth + '>&nbsp;</div>';
         }
+        console.log('===== @Card Ending !!!');
         return theMarkup;
     },
     _print: function (data) {
@@ -127,21 +188,27 @@ Ext.define('App.Card', {
         doc.write('</body></html>');
         doc.close();
         printWindow.print();
+        console.log('@Card _Print Fired');
         return false;
     },
     // Fits our text into the diaplay panel take the string and the length you want to cut by then adds ... if the string breaches the limit
-    _shortenString: function (string, stringLength) {
+    _shortenString: function (string, stringLength, type, name) {
         //console.log('_shortenString:', string, stringLength);
-        var output;
+        var output, result;
         if (string.length > stringLength) {
             output = string.substring(stringLength, length) + ' ...';
+            result = string + '***** [ Trimmed ] *****';
         } else {
             output = string;
         }
+        if (string.length <= stringLength) {
+            result = '***** [ No Change ] *****';
+        }
+        console.log('@Card Filter [', name, '] @ _shortenString', string, ' MaxChar: ', stringLength, ' Result: ', result);
+        console.log('=====');
         return output;
     },
     _checkMissing: function (portfolioType, item) {
-        //console.log('_checkMissing :', portfolioType);
         var output, f1, f2, f3, f4, f5;
         f1 = MySharedData.portfolioType[0];
         f2 = MySharedData.portfolioType[1];
@@ -223,6 +290,8 @@ Ext.define('App.Card', {
                 output = 'Missing';
             }
         }
+        console.log('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
+        console.log('=====');
         return output;
     }
 });

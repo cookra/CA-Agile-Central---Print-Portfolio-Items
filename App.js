@@ -3,7 +3,8 @@ Ext.define('MySharedData', {
     printHtml: '',
     supportArray: [],
     // Needs automating!
-    portfolioType: ['PortfolioItem/BUStrategi""cObjectives',
+    portfolioType: [
+        'PortfolioItem/BUStrategicObjectives',
         'PortfolioItem/STPortfolioObjectives',
         'PortfolioItem/PortfolioEpic',
         'PortfolioItem/BusinessOutcome',
@@ -31,6 +32,7 @@ Ext.define('PrintApp', {
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
+        console.log('\033[2J');
         var me = this;
         var xData1 = this.getContext().getUser();
         var xData2 = this.getContext().getProject();
@@ -90,7 +92,6 @@ Ext.define('PrintApp', {
                     xtype: 'button',
                     text: 'Support',
                     margin: '5 5 5 20',
-                    handler: this._getPrint,
                     listeners: {
                         afterrender: function (v) {
                             v.el.on('click', function () {
@@ -131,12 +132,12 @@ Ext.define('PrintApp', {
         console.log('@ _kickoff going to _loadData');
     },
     _getFilters: function (value) {
-        console.log('@ _getFilters returning [value] to _loadData');
         var theFilter = Ext.create('Rally.data.wsapi.Filter', {
             property: 'PortfolioItemType',
             operation: '=',
             value: value
         });
+        console.log('@ _getFilters returning [',theFilter.property,' ',theFilter.operation,' ',theFilter.value,'] to _loadData');
         return theFilter;
     },
     _loadData: function () {
@@ -179,7 +180,6 @@ Ext.define('PrintApp', {
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
-        console.log('@ _createResults Destroying the loading mask');
         this._unmask();
         MySharedData.printHtml = html;
     },
