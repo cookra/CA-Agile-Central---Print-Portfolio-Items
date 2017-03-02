@@ -7,14 +7,224 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
+                Ext.define('MySharedData', {
+    singleton: true,
+    printHtml: '',
+    supportArray: [],
+    // Needs automating!
+    portfolioType: [
+        'PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
+});
+
+Ext.define('PrintApp', {
+    extend: 'Rally.app.App',
+    theStore: undefined, // app level references to the store and grid for easy access in various methods
+    printHtml: null,
+    theFetch: ['FormattedID',
+        'Name',
+        'Project',
+        'Owner',
+        'Size',
+        'DisplayColor',
+        'State',
+        'PreliminaryEstimate',
+        'Parent',
+        'Release',
+        'c_QRWP',
+        '_type',
+        'PortfolioItemType',
+        'c_OrderBookNumberOBN'
+    ],
+    launch: function () {
+        console.log('\033[2J');
+        var me = this;
+        var xData1 = this.getContext().getUser();
+        var xData2 = this.getContext().getProject();
+        var xData3 = this.getContext().getWorkspace();
+        var xData4 = this.getContext().getSubscription();
+        var gEpros = App.Emailer; // shorten global property string
+        var gRpros = App.Runtime; // shorten global property string
+        var layout = Ext.create('Ext.container.Container', {
+            layout: 'fit',
+            align: 'stretch',
+            height: '100%',
+            layoutConfig: {
+                align: 'stretch',
+            },
+            items: [{
+                xtype: 'panel',
+                width: 300,
+                border: false,
+                layout: 'hbox',
+                html: '',
+                id: 'myHeader',
+                itemId: 'header',
+                listeners: {
+                    add: function () {
+                        console.log('@ Launch Added Panel');
+                    },
+                    scope: me
+                },
+                items: [{
+                    xtype: 'rallyportfolioitemtypecombobox',
+                    itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                    fieldLabel: 'Select',
+                    labelAlign: 'left',
+                    id: 'portfolio-combobox',
+                    width: 300,
+                    margin: '5 5 5 5',
+                    listeners: {
+                        select: function () {
+                            console.log('@ Launch Added Portfolio Combobox');
+                            me._kickoff();
+                        },
+                        scope: me
+                    }
+                }, {
+                    xtype: 'button',
+                    text: 'Print Results',
+                    margin: '5 5 5 20',
+                    handler: this._getPrint,
+                    listeners: {
+                        add: function () {
+                            console.log('@ Launch Added Print Button');
+
+                        },
+                        scope: me
+                    }
+                }, {
+                    xtype: 'button',
+                    text: 'Support',
+                    margin: '5 5 5 20',
+                    listeners: {
+                        afterrender: function (v) {
+                            v.el.on('click', function () {
+                                var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                console.log('@ Launch Added Support Button');
+                            });
+                        },
+                        scope: me
+                    }
+                }],
+            }, {
+                xtype: 'box',
+                id: 'myTarget',
+                autoScroll: true,
+                margin: '10 5 5 10',
+                width: '100%',
+                style: {
+                    borderTop: '1'
+                },
+                autoEl: {
+                    tag: 'div',
+                    cls: 'myContent',
+                    html: '',
+                },
+                listeners: {
+                    add: function () {
+                        console.log('@ Launch Added Content Box');
+                    },
+                    scope: me
+                },
+                flex: 1
+            }]
+        });
+        this.add(layout);
+    },
+    _kickoff: function () {
+        this._loadData();
+        console.log('@ _kickoff going to _loadData');
+    },
+    _getFilters: function (value) {
+        var theFilter = Ext.create('Rally.data.wsapi.Filter', {
+            property: 'PortfolioItemType',
+            operation: '=',
+            value: value
+        });
+        console.log('@ _getFilters returning [',theFilter.property,' ',theFilter.operation,' ',theFilter.value,'] to _loadData');
+        return theFilter;
+    },
+    _loadData: function () {
+        console.log('@ _loadData working the store magic..');
+        this._mask("Going deep, searching...");
+        var me = this;
+        var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
+        var myFilter = this._getFilters(selectedItem);
+        if (me.theStore) {
+            me.theStore.setFilter(myFilter);
+            me.theStore.load();
+            console.log('@ _loadData We have been here already, using load() to fetch new data');
+        } else {
+            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
+                model: 'PortfolioItem',
+                autoLoad: true, // <----- Don't forget to set this to true! heh
+                filters: myFilter,
+                limit: Infinity,
+                type: 'PortfolioItem',
+                listeners: {
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                        console.log('@ _loadData load() fired going to _createResults');
+
+                    },
+                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
+                },
+                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
+            });
+            console.log('@ _loadData New store request');
+
+        }
+    },
+    _createResults: function (myData) {
+        console.log('@ _createResults Building HTML based on [myData] passed by the store');
+        MySharedData.supportArray = myData;
+        var html = '<div id="cards">';
+        for (var x = 0; x < myData.length; x++) {
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
+        }
+        html += '</div>';
+        Ext.fly('myTarget').update(html);
+        this._unmask();
+        MySharedData.printHtml = html;
+    },
+    _getPrint: function () {
+        console.log('@ _getPrint Print requested');
+        var printHtml = null;
+        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        return printHtml;
+    },
+    _mask: function (message) {
+        console.log('@ _mask We are loading the store, show the spinner');
+        //this.logger.log("Mask: ", message);
+        if (this.sparkler) {
+            this.sparkler.destroy();
+        }
+        this.sparkler = new Ext.LoadMask(this, {
+            msg: message
+        });
+        this.sparkler.show();
+        //Ext.fly('myTarget').update(this.sparkler.show());
+    },
+    _unmask: function () {
+        console.log('@ _unmask We have the data so destroy the spinner');
+        if (this.sparkler) {
+            this.sparkler.hide();
+        }
+    },
+});
                 Ext.define('App.Runtime', {
     singleton: true,
     config: {
         // Versioning
-        Pversion: 'v2.0.0',
+        Pversion: 'v2.1b',
         PappID: 'AC Print Portfolio Items',
         Powner: 'Richard Cook',
-        PreleaseDate: '2017-02-28 : 17:07',
+        PreleaseDate: '2017-03-02 : 21:34',
         Pdescription: 'Print Portfolio Items',
         // Git Repo Details
         PrepoAddress: 'not shared',
@@ -26,101 +236,6 @@
         console.log('Runtime Class Saying Hi! - I hold details about this App - Version, Owner, ID etc..');
         var me = this;
         me.initConfig(config);
-    },
-});
-                Ext.define('App.Emailer', {
-    singleton: true,
-    constructor: function () {
-        console.log('Config added: c Email');
-    },
-    _emailer: function (coreData, xData1, xData2, xData3, xData4) {
-        console.log('@ _emailer');
-        var gProp = App.Runtime;
-        var PcontactSubject = 'REF: AC APP ';
-        var PcontactMessage = '=========== Please leave your message above this line ==========';
-        var PcontactEmail = 'richard.cook@barclaycard.co.uk';
-        // User Vars
-        var yourapp = '> Browser Web App Name > ' + navigator.appName;
-        var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
-        var yourversion = '> Browser Version > ' + navigator.appVersion;
-        var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
-        var yourplatform = '> Platform > ' + navigator.platform;
-        var youroscpu = '> OS CPU > ' + navigator.oscpu;
-        var yourcookie = '> Cookie Enabled > ' + navigator.cookieEnabled;
-        var outwinw = '> Owidth > ' + window.outerWidth;
-        var outwinh = '> Oheight > ' + window.outerHeight;
-        var inwinw = '> Iwidth > ' + window.innerWidth;
-        var inwinh = '> Iheight > ' + window.innerHeight;
-        var uri = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
-        var src = '> SRC > ' + document.getElementsByTagName('script')[0].src;
-        var localname = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
-        var type = '> Type > ' + document.getElementsByTagName('script')[0].type;
-        var userData = [
-            yourapp,
-            yourappalt,
-            yourversion,
-            yourappcodename,
-            yourplatform,
-            youroscpu,
-            yourcookie,
-            outwinw,
-            outwinh,
-            inwinw,
-            inwinh,
-            uri,
-            src,
-            localname,
-            type
-        ];
-        // Tools
-        var charReturn = '\r\n';
-        // Emailer
-        var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
-        var message = PcontactMessage;
-        var report = '';
-
-        report += charReturn + charReturn;
-        report += 'Environment Report > ' + charReturn;
-        report += '> Sencha ExtJS Version > ' + Ext.getVersion().version + charReturn + charReturn;
-        report += 'Agile Central Report > ' + charReturn;
-        report += '> AC User Username > ' + xData1.UserName+ charReturn;
-        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
-        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
-        report += '> AC User Role > ' + xData1.Role+ charReturn;
-        report += '> AC User Loc > ' + xData1._ref+ charReturn;
-        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
-        report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
-        //report += '> AC User Default Node > ' + xData1.UserProfile.DefaultProject.Name+ charReturn;
-        //report += '> AC User Default Workapace > ' + xData1.UserProfile.DefaultWorkspace.Name+ charReturn;
-        report += '> AC Application Node > ' + xData2.Name+ charReturn;
-        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
-        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
-        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
-        report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
-        report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
-        report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
-
-        report += 'Build Details ' + charReturn;
-        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
-        report += '> Owner > ' + gProp.Powner + charReturn;
-        report += '> Version > ' + gProp.Pversion + charReturn;
-        report += '> Description > ' + gProp.Pdescription + charReturn;
-        report += '> App ID > ' + gProp.PappID + charReturn + charReturn;
-
-        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
-        for (var i = 0; i < coreData.length; i++) {
-            report += '> ',coreData[i].raw.FormattedID + ' : ';
-            report += coreData[i].raw.Name + ' : ';
-            report += coreData[i].raw._ref + charReturn;
-        }
-        report += charReturn;
-        report += 'System Report Found ' + userData.length + ' items'+charReturn;
-        for (var x = 0; x < userData.length; x++) {
-            report += userData[x] + charReturn;
-        }
-        report = encodeURIComponent(report);      
-         console.log('@ _emailer Launch Email App');
-        return window.location = 'mailto:' + PcontactEmail + '?subject=' + subject + '&body=' + message + report;
     },
 });
                 Ext.define('App.Card', {
@@ -427,214 +542,99 @@
         return theVersion;
     }
 });
-                Ext.define('MySharedData', {
+                Ext.define('App.Emailer', {
     singleton: true,
-    printHtml: '',
-    supportArray: [],
-    // Needs automating!
-    portfolioType: [
-        'PortfolioItem/BUStrategicObjectives',
-        'PortfolioItem/STPortfolioObjectives',
-        'PortfolioItem/PortfolioEpic',
-        'PortfolioItem/BusinessOutcome',
-        'PortfolioItem/Feature',
-    ], // Portfolio Types
-});
+    constructor: function () {
+        console.log('Config added: c Email');
+    },
+    _emailer: function (coreData, xData1, xData2, xData3, xData4) {
+        console.log('@ _emailer');
+        var gProp = App.Runtime;
+        var PcontactSubject = 'REF: AC APP ';
+        var PcontactMessage = '=========== Please leave your message above this line ==========';
+        var PcontactEmail = 'richard.cook@barclaycard.co.uk';
+        // User Vars
+        var yourapp = '> Browser Web App Name > ' + navigator.appName;
+        var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
+        var yourversion = '> Browser Version > ' + navigator.appVersion;
+        var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
+        var yourplatform = '> Platform > ' + navigator.platform;
+        var youroscpu = '> OS CPU > ' + navigator.oscpu;
+        var yourcookie = '> Cookie Enabled > ' + navigator.cookieEnabled;
+        var outwinw = '> Owidth > ' + window.outerWidth;
+        var outwinh = '> Oheight > ' + window.outerHeight;
+        var inwinw = '> Iwidth > ' + window.innerWidth;
+        var inwinh = '> Iheight > ' + window.innerHeight;
+        var uri = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
+        var src = '> SRC > ' + document.getElementsByTagName('script')[0].src;
+        var localname = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
+        var type = '> Type > ' + document.getElementsByTagName('script')[0].type;
+        var userData = [
+            yourapp,
+            yourappalt,
+            yourversion,
+            yourappcodename,
+            yourplatform,
+            youroscpu,
+            yourcookie,
+            outwinw,
+            outwinh,
+            inwinw,
+            inwinh,
+            uri,
+            src,
+            localname,
+            type
+        ];
+        // Tools
+        var charReturn = '\r\n';
+        // Emailer
+        var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
+        var message = PcontactMessage;
+        var report = '';
 
-Ext.define('PrintApp', {
-    extend: 'Rally.app.App',
-    theStore: undefined, // app level references to the store and grid for easy access in various methods
-    printHtml: null,
-    theFetch: ['FormattedID',
-        'Name',
-        'Project',
-        'Owner',
-        'Size',
-        'DisplayColor',
-        'State',
-        'PreliminaryEstimate',
-        'Parent',
-        'Release',
-        'c_QRWP',
-        '_type',
-        'PortfolioItemType',
-        'c_OrderBookNumberOBN'
-    ],
-    launch: function () {
-        console.log('\033[2J');
-        var me = this;
-        var xData1 = this.getContext().getUser();
-        var xData2 = this.getContext().getProject();
-        var xData3 = this.getContext().getWorkspace();
-        var xData4 = this.getContext().getSubscription();
-        var gEpros = App.Emailer; // shorten global property string
-        var gRpros = App.Runtime; // shorten global property string
-        var layout = Ext.create('Ext.container.Container', {
-            layout: 'fit',
-            align: 'stretch',
-            height: '100%',
-            layoutConfig: {
-                align: 'stretch',
-            },
-            items: [{
-                xtype: 'panel',
-                width: 300,
-                border: false,
-                layout: 'hbox',
-                html: '',
-                id: 'myHeader',
-                itemId: 'header',
-                listeners: {
-                    add: function () {
-                        console.log('@ Launch Added Panel');
-                    },
-                    scope: me
-                },
-                items: [{
-                    xtype: 'rallyportfolioitemtypecombobox',
-                    itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
-                    fieldLabel: 'Select',
-                    labelAlign: 'left',
-                    id: 'portfolio-combobox',
-                    width: 300,
-                    margin: '5 5 5 5',
-                    listeners: {
-                        select: function () {
-                            console.log('@ Launch Added Portfolio Combobox');
-                            me._kickoff();
-                        },
-                        scope: me
-                    }
-                }, {
-                    xtype: 'button',
-                    text: 'Print Results',
-                    margin: '5 5 5 20',
-                    handler: this._getPrint,
-                    listeners: {
-                        add: function () {
-                            console.log('@ Launch Added Print Button');
+        report += charReturn + charReturn;
+        report += 'Environment Report > ' + charReturn;
+        report += '> Sencha ExtJS Version > ' + Ext.getVersion().version + charReturn + charReturn;
+        report += 'Agile Central Report > ' + charReturn;
+        report += '> AC User Username > ' + xData1.UserName+ charReturn;
+        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
+        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
+        report += '> AC User Role > ' + xData1.Role+ charReturn;
+        report += '> AC User Loc > ' + xData1._ref+ charReturn;
+        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
+        report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
+        //report += '> AC User Default Node > ' + xData1.UserProfile.DefaultProject.Name+ charReturn;
+        //report += '> AC User Default Workapace > ' + xData1.UserProfile.DefaultWorkspace.Name+ charReturn;
+        report += '> AC Application Node > ' + xData2.Name+ charReturn;
+        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
+        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
+        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
+        report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
+        report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
+        report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
 
-                        },
-                        scope: me
-                    }
-                }, {
-                    xtype: 'button',
-                    text: 'Support',
-                    margin: '5 5 5 20',
-                    listeners: {
-                        afterrender: function (v) {
-                            v.el.on('click', function () {
-                                var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                console.log('@ Launch Added Support Button');
-                            });
-                        },
-                        scope: me
-                    }
-                }],
-            }, {
-                xtype: 'box',
-                id: 'myTarget',
-                autoScroll: true,
-                margin: '10 5 5 10',
-                width: '100%',
-                style: {
-                    borderTop: '1'
-                },
-                autoEl: {
-                    tag: 'div',
-                    cls: 'myContent',
-                    html: '',
-                },
-                listeners: {
-                    add: function () {
-                        console.log('@ Launch Added Content Box');
-                    },
-                    scope: me
-                },
-                flex: 1
-            }]
-        });
-        this.add(layout);
-    },
-    _kickoff: function () {
-        this._loadData();
-        console.log('@ _kickoff going to _loadData');
-    },
-    _getFilters: function (value) {
-        var theFilter = Ext.create('Rally.data.wsapi.Filter', {
-            property: 'PortfolioItemType',
-            operation: '=',
-            value: value
-        });
-        console.log('@ _getFilters returning [',theFilter.property,' ',theFilter.operation,' ',theFilter.value,'] to _loadData');
-        return theFilter;
-    },
-    _loadData: function () {
-        console.log('@ _loadData working the store magic..');
-        this._mask("Going deep, searching...");
-        var me = this;
-        var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
-        var myFilter = this._getFilters(selectedItem);
-        if (me.theStore) {
-            me.theStore.setFilter(myFilter);
-            me.theStore.load();
-            console.log('@ _loadData We have been here already, using load() to fetch new data');
-        } else {
-            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
-                model: 'PortfolioItem',
-                autoLoad: true, // <----- Don't forget to set this to true! heh
-                filters: myFilter,
-                limit: Infinity,
-                type: 'PortfolioItem',
-                listeners: {
-                    load: function (myStore, myData) {
-                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        console.log('@ _loadData load() fired going to _createResults');
+        report += 'Build Details ' + charReturn;
+        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
+        report += '> Owner > ' + gProp.Powner + charReturn;
+        report += '> Version > ' + gProp.Pversion + charReturn;
+        report += '> Description > ' + gProp.Pdescription + charReturn;
+        report += '> App ID > ' + gProp.PappID + charReturn + charReturn;
 
-                    },
-                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
-                },
-                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
-            });
-            console.log('@ _loadData New store request');
-
+        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
+        for (var i = 0; i < coreData.length; i++) {
+            report += '> ' + coreData[i].raw.FormattedID + ' : ';
+            report += coreData[i].raw.Name + ' : ';
+            report += coreData[i].raw._ref + charReturn;
         }
-    },
-    _createResults: function (myData) {
-        console.log('@ _createResults Building HTML based on [myData] passed by the store');
-        MySharedData.supportArray = myData;
-        var html = '<div id="cards">';
-        for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
+        report += charReturn;
+        report += 'System Report Found ' + userData.length + ' items'+charReturn;
+        for (var x = 0; x < userData.length; x++) {
+            report += userData[x] + charReturn;
         }
-        html += '</div>';
-        Ext.fly('myTarget').update(html);
-        this._unmask();
-        MySharedData.printHtml = html;
-    },
-    _getPrint: function () {
-        console.log('@ _getPrint Print requested');
-        var printHtml = null;
-        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
-        return printHtml;
-    },
-    _mask: function (message) {
-        console.log('@ _mask We are loading the store, show the spinner');
-        //this.logger.log("Mask: ", message);
-        if (this.sparkler) {
-            this.sparkler.destroy();
-        }
-        this.sparkler = new Ext.LoadMask(this, {
-            msg: message
-        });
-        this.sparkler.show();
-        //Ext.fly('myTarget').update(this.sparkler.show());
-    },
-    _unmask: function () {
-        console.log('@ _unmask We have the data so destroy the spinner');
-        if (this.sparkler) {
-            this.sparkler.hide();
-        }
+        report = encodeURIComponent(report);      
+         console.log('@ _emailer Launch Email App');
+        return window.location = 'mailto:' + PcontactEmail + '?subject=' + subject + '&body=' + message + report;
     },
 });
 

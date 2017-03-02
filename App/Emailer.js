@@ -79,7 +79,7 @@ Ext.define('App.Emailer', {
 
         report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
         for (var i = 0; i < coreData.length; i++) {
-            report += '> ',coreData[i].raw.FormattedID + ' : ';
+            report += '> ' + coreData[i].raw.FormattedID + ' : ';
             report += coreData[i].raw.Name + ' : ';
             report += coreData[i].raw._ref + charReturn;
         }
