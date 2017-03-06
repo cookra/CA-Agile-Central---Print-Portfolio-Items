@@ -99,7 +99,7 @@ Ext.define('PrintApp', {
                             listeners: {
                                 select: function () {
                                     console.log('@ Launch Added Portfolio Combobox');
-                                    me._kickoff('item');
+                                    me._kickoff('user');
                                 },
                                 scope: me
                             }
@@ -189,7 +189,7 @@ Ext.define('PrintApp', {
     },
     _getFilters: function (type) {
         var theFilter, selectedItem;
-        if (type === 'item') {
+        if (type === 'item' || type === 'user') {
 /*
             selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
             theFilter = Ext.create('Rally.data.wsapi.Filter', {
@@ -222,9 +222,15 @@ Ext.define('PrintApp', {
             console.log('SEARCH');
         }
         if (type === 'user') {
-
             if (this.down('rallyusersearchcombobox').getValue() === null) {
-                theFilter = '';
+                folioType = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                property: 'PortfolioItemType',
+                operation: '=',
+                value: folioType.getValue(),
+            });
+            theFilter = folioFilter;
+            console.log('no user');
             } else {
                 var folioType = this.down('rallyportfolioitemtypecombobox');
                 var folioFilter = Ext.create('Rally.data.wsapi.Filter', {
@@ -240,7 +246,7 @@ Ext.define('PrintApp', {
                 theFilter = folioFilter.and(userFilter);
             }
         }
-        console.log('@ _getFilters Switch [', type, '] returning [', theFilter, ' ', theFilter.operation, ' ', theFilter.value, '] to _loadData');
+        //console.log('@ _getFilters Switch [', type, '] returning [', theFilter, ' ', theFilter.operation, ' ', theFilter.value, '] to _loadData');
         return theFilter;
     },
     _loadData: function (type) {
