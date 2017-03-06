@@ -29,6 +29,7 @@ Ext.define('PrintApp', {
         'c_QRWP',
         '_type',
         'PortfolioItemType',
+        '_refObjectName',
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
@@ -48,100 +49,132 @@ Ext.define('PrintApp', {
                 align: 'stretch',
             },
             items: [{
-                xtype: 'panel',
-                width: 300,
-                border: false,
-                layout: 'hbox',
-                html: '',
-                id: 'myHeader',
-                itemId: 'header',
-                listeners: {
-                    add: function () {
-                        console.log('@ Launch Added Panel');
-                    },
-                    scope: me
-                },
-                items: [{
-                    xtype: 'rallyportfolioitemtypecombobox',
-                    itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
-                    fieldLabel: 'Select',
-                    labelAlign: 'left',
-                    id: 'portfolio-combobox',
+                    xtype: 'panel',
                     width: 300,
-                    margin: '5 5 5 5',
-                    listeners: {
-                        select: function () {
-                            console.log('@ Launch Added Portfolio Combobox');
-                            me._kickoff('item');
-                        },
-                        scope: me
-                    }
-                }, {
-                    xtype: 'rallysearchcombobox',
-                    storeConfig: {
-                        model: 'PortfolioItem'
-                    },
-                    itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
-                    fieldLabel: 'Search',
-                    labelAlign: 'left',
-                    id: 'search-combobox',
-                    width: 300,
-                    margin: '5 5 5 5',
-                    listeners: {
-                        select: function (aa, bb, cc) {
-                            console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
-                            me._kickoff('search');
-                        },
-                        scope: me
-                    }
-                }, {
-                    xtype: 'button',
-                    text: 'Print Results',
-                    margin: '5 5 5 20',
-                    handler: this._getPrint,
+                    border: false,
+                    layout: 'hbox',
+                    html: '',
+                    id: 'myHeader',
+                    itemId: 'header',
                     listeners: {
                         add: function () {
-                            console.log('@ Launch Added Print Button');
-
+                            console.log('@ Launch Added Panel');
                         },
                         scope: me
-                    }
-                }, {
-                    xtype: 'button',
-                    text: 'Support',
-                    margin: '5 5 5 20',
-                    listeners: {
-                        afterrender: function (v) {
-                            v.el.on('click', function () {
-                                var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                console.log('@ Launch Added Support Button');
-                            });
-                        },
-                        scope: me
-                    }
-                }],
-            }, {
-                xtype: 'box',
-                id: 'myTarget',
-                autoScroll: true,
-                margin: '10 5 5 10',
-                width: '100%',
-                style: {
-                    borderTop: '1'
-                },
-                autoEl: {
-                    tag: 'div',
-                    cls: 'myContent',
-                    html: '',
-                },
-                listeners: {
-                    add: function () {
-                        console.log('@ Launch Added Content Box');
                     },
-                    scope: me
+                    items: [{
+                            xtype: 'rallyusersearchcombobox',
+                            storeConfig: {
+                                model: 'PortfolioItem'
+                            },
+                            fieldLabel: 'Filter by Owner:',
+                            project: this.getContext().getProject(),
+                            value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                            itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
+                            labelAlign: 'right',
+                            id: 'user-combobox',
+                            margin: '5 5 5 5',
+                            listeners: {
+                                select: function (aa, bb, cc) {
+                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
+                                    me._kickoff('user');
+                                },
+                                scope: me
+                            }
+                        }, {
+                            xtype: 'rallyportfolioitemtypecombobox',
+                            itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                            fieldLabel: 'Select',
+                            labelAlign: 'left',
+                            id: 'portfolio-combobox',
+                            margin: '5 5 5 5',
+                            listeners: {
+                                select: function () {
+                                    console.log('@ Launch Added Portfolio Combobox');
+                                    me._kickoff('item');
+                                },
+                                scope: me
+                            }
+                        }, {
+                            xtype: 'rallysearchcombobox',
+                            storeConfig: {
+                                model: 'PortfolioItem'
+                            },
+                            itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
+                            fieldLabel: 'Search',
+                            labelAlign: 'right',
+                            id: 'search-combobox',
+                            width: 300,
+                            margin: '5 5 5 5',
+                            listeners: {
+                                specialkey: function (field, e) {
+                                    // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
+                                    // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
+                                    if (e.getKey() === e.ENTER) {
+                                        me._kickoff('search');
+
+                                    }
+                                },
+                                select: function (aa, bb, cc) {
+                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
+                                    me._kickoff('search');
+                                },
+
+                                scope: me
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Print Results',
+                            margin: '5 5 5 20',
+                            handler: this._getPrint,
+                            listeners: {
+                                add: function () {
+                                    console.log('@ Launch Added Print Button');
+
+                                },
+                                scope: me
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Support',
+                            margin: '5 5 5 20',
+                            listeners: {
+                                afterrender: function (v) {
+                                    v.el.on('click', function () {
+                                        var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                        console.log('@ Launch Added Support Button');
+                                    });
+                                },
+                                scope: me
+                            }
+                        }
+                    ],
                 },
-                flex: 1
-            }]
+                {
+                    xtype: 'box',
+                    id: 'myTarget',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    width: '100%',
+                    style: {
+                        borderTop: '1'
+                    },
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myContent',
+                        html: '',
+                    },
+                    listeners: {
+                        add: function () {
+                            console.log('@ Launch Added Content Box');
+                        },
+                        scope: me
+                    },
+                    flex: 1
+                }
+            ]
         });
         this.add(layout);
     },
@@ -168,6 +201,15 @@ Ext.define('PrintApp', {
             });
             console.log('SEARCH');
         }
+        if (type === 'user') {
+            var selectedItem = this.down('rallyusersearchcombobox');
+            //var selectedItem = Ext.getCmp('user-combobox').getRecord().get('_refObjectName');
+            var theFilter = Ext.create('Rally.data.wsapi.Filter', {
+                property: 'Owner',
+                value: selectedItem.getValue(),
+            });
+            console.log('USER ', selectedItem);
+        }
         console.log('@ _getFilters Switch [', type, '] returning [', theFilter.property, ' ', theFilter.operation, ' ', theFilter.value, '] to _loadData');
         return theFilter;
     },
@@ -176,6 +218,7 @@ Ext.define('PrintApp', {
         this._mask("Going deep, searching...");
         var me = this;
         var myFilter = this._getFilters(type);
+        console.log('@ _loadData Exposed Filter [', myFilter, ']');
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();

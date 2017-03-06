@@ -2,10 +2,10 @@ Ext.define('App.Runtime', {
     singleton: true,
     config: {
         // Versioning
-        Pversion: 'v2.1b',
+        Pversion: 'v3.0b',
         PappID: 'AC Print Portfolio Items',
         Powner: 'Richard Cook',
-        PreleaseDate: '2017-03-02 : 21:34',
+        PreleaseDate: '2017-03-06 : 14:38',
         Pdescription: 'Print Portfolio Items',
         // Git Repo Details
         PrepoAddress: 'not shared',
