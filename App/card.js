@@ -1,9 +1,10 @@
 Ext.define('App.Card', {
     theMarkup: null,
+    debugShow: false,
     _build: function (cardNum, totalCards, data) {
-        console.log('===== @Card Happy Birthday!');
-        console.log('@Card Class Saying Hi! - I build the output HTML for displaying and printing');
-        console.log('=====');
+        this._showDebug('===== @Card Happy Birthday!');
+        this._showDebug('@Card Class Saying Hi! - I build the output HTML for displaying and printing');
+        this._showDebug('=====');
         var myRelease, myQRWP, myOBN, myColour, myNode, myParentID, myParentIDName, myEstimate, myName, myOwner, myId;
 
 
@@ -32,10 +33,10 @@ Ext.define('App.Card', {
         // OBN
         //
         if (data.raw.c_OrderBookNumberOBN) {
-            console.log('@Card Filter [ OBN ] > (found) sending to _shortenString ', data.raw.c_OrderBookNumberOBN);
+            this._showDebug('@Card Filter [ OBN ] > (found) sending to _shortenString ', data.raw.c_OrderBookNumberOBN);
             myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type, 'OBN');
         } else {
-            console.log('@Card Filter [ OBN ] > (not found) checking if needed with this item _checkMissing ');
+            this._showDebug('@Card Filter [ OBN ] > (not found) checking if needed with this item _checkMissing ');
             myOBN = this._checkMissing(data.raw._type, 'OBN');
         }
         //========================================================================================================================================================================
@@ -43,11 +44,11 @@ Ext.define('App.Card', {
         // COLOUR
         //
         if (data.raw.DisplayColor) {
-            console.log('@Card Filter [ Colour ] > (found) ', data.raw.DisplayColor);
+            this._showDebug('@Card Filter [ Colour ] > (found) ', data.raw.DisplayColor);
             myColour = data.raw.DisplayColor;
         } else {
-            console.log('@Card Filter [ Colour ] > (not found) NOT POSSIBLE!!! Colour set to #ff6600');
-            console.log('=====');
+            this._showDebug('@Card Filter [ Colour ] > (not found) NOT POSSIBLE!!! Colour set to #ff6600');
+            this._showDebug('=====');
             myColour = "#ff6600";
         }
         //========================================================================================================================================================================
@@ -55,10 +56,10 @@ Ext.define('App.Card', {
         // PROJECT
         //
         if (data.raw.Project) {
-            console.log('@Card Filter [ Project ] > (found) sending to _shortenString ', data.raw.Project.Name);
+            this._showDebug('@Card Filter [ Project ] > (found) sending to _shortenString ', data.raw.Project.Name);
             myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type, 'Project');
         } else {
-            console.log('@Card Filter [ Project ] > (not found) NOT POSSIBLE!!! No Node Assigned');
+            this._showDebug('@Card Filter [ Project ] > (not found) NOT POSSIBLE!!! No Node Assigned');
             myNode = "No Node Assigned";
         }
         //========================================================================================================================================================================
@@ -66,10 +67,10 @@ Ext.define('App.Card', {
         // RELEASE
         //
         if (data.raw.Release === undefined || !data.raw.Release) {
-            console.log('@Card Filter [ Release ] > (not found) cheking if needed with this item _checkMissing');
+            this._showDebug('@Card Filter [ Release ] > (not found) cheking if needed with this item _checkMissing');
             myRelease = this._checkMissing(data.raw._type, 'Release');
         } else {
-            console.log('@Card Filter [ Release ] > (found) sending to _shortenString ', data.raw.Release);
+            this._showDebug('@Card Filter [ Release ] > (found) sending to _shortenString ', data.raw.Release);
             myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type, 'Release');
         }
         //========================================================================================================================================================================
@@ -77,10 +78,10 @@ Ext.define('App.Card', {
         // QRWP
         //
         if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
-            console.log('@Card Filter [ QRWP ] > (not found) cheking if needed with this item _checkMissing');
+            this._showDebug('@Card Filter [ QRWP ] > (not found) cheking if needed with this item _checkMissing');
             myQRWP = this._checkMissing(data.raw._type, 'QRWP');
         } else {
-            console.log('@Card Filter [ QRWP ] > (found) sending to _shortenString ', data.raw.c_QRWP);
+            this._showDebug('@Card Filter [ QRWP ] > (found) sending to _shortenString ', data.raw.c_QRWP);
             myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type, 'QRWP');
         }
         //========================================================================================================================================================================
@@ -88,11 +89,11 @@ Ext.define('App.Card', {
         // PARENT
         //
         if (data.raw.Parent) {
-            console.log('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
+            this._showDebug('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
             myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
             myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type, 'Parent');
         } else {
-            console.log('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
+            this._showDebug('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
             myParentIDName = "";
             myParentID = this._checkMissing(data.raw._type, 'Parent');
         }
@@ -101,17 +102,17 @@ Ext.define('App.Card', {
         // ESTIMATE
         //
         if (data.raw.PreliminaryEstimate) {
-            console.log('@Card Filter [ Estimate ] > (found) A sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
+            this._showDebug('@Card Filter [ Estimate ] > (found) A sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PreliminaryEstimate.Name;
         } else if (data.raw.PlanEstimate) {
-            console.log('@Card Filter [ Estimate ] > (found) B sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
+            this._showDebug('@Card Filter [ Estimate ] > (found) B sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PlanEstimate;
         } else if (data.raw.Estimate) {
-            console.log('@Card Filter [ Estimate ] > (found) C sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
+            this._showDebug('@Card Filter [ Estimate ] > (found) C sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.Estimate;
         } else {
-            console.log('@Card Filter [ Estimate ] > (Not Found) Not Sized');
-            console.log('=====');
+            this._showDebug('@Card Filter [ Estimate ] > (Not Found) Not Sized');
+            this._showDebug('=====');
             myEstimate = "Not Sized";
         }
         //========================================================================================================================================================================
@@ -119,10 +120,10 @@ Ext.define('App.Card', {
         // NAME
         //
         if (data.raw._refObjectName) {
-            console.log('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
+            this._showDebug('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
             myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type, 'Name');
         } else {
-            console.log('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
+            this._showDebug('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
             myName = 'No Name';
 
         }
@@ -131,10 +132,10 @@ Ext.define('App.Card', {
         // OWNER
         //
         if (data.raw.Owner) {
-            console.log('@Card Filter [ Owner ] > (found) sending to _shortenString ', data.raw.Owner._refObjectName);
+            this._showDebug('@Card Filter [ Owner ] > (found) sending to _shortenString ', data.raw.Owner._refObjectName);
             myOwner = this._shortenString(data.raw.Owner._refObjectName, 50, data.raw._type, 'Owner');
         } else {
-            console.log('@Card Filter [ Owner ] > (Not Found) No Owner');
+            this._showDebug('@Card Filter [ Owner ] > (Not Found) No Owner');
             myOwner = 'No Owner';
 
         }
@@ -173,8 +174,13 @@ Ext.define('App.Card', {
         } else if (cardNum === totalCards - 1) {
             theMarkup = theMarkup + '<div class=cb ' + cssClearBoth + '>&nbsp;</div>';
         }
-        console.log('===== @Card Ending !!!');
+        this._showDebug('===== @Card Ending !!!');
         return theMarkup;
+    },
+    _showDebug: function (msg){
+        if(this.debugShow===true){
+            console.log(msg);
+        }
     },
     _print: function (data) {
         var title, options, printWindow, doc;
@@ -188,12 +194,12 @@ Ext.define('App.Card', {
         doc.write('</body></html>');
         doc.close();
         printWindow.print();
-        console.log('@Card _Print Fired');
+        this._showDebug('@Card _Print Fired');
         return false;
     },
     // Fits our text into the diaplay panel take the string and the length you want to cut by then adds ... if the string breaches the limit
     _shortenString: function (string, stringLength, type, name) {
-        //console.log('_shortenString:', string, stringLength);
+        //this._showDebug('_shortenString:', string, stringLength);
         var output, result;
         if (string.length > stringLength) {
             output = string.substring(stringLength, length) + ' ...';
@@ -204,8 +210,8 @@ Ext.define('App.Card', {
         if (string.length <= stringLength) {
             result = '***** [ No Change ] *****';
         }
-        console.log('@Card Filter [', name, '] @ _shortenString', string, ' MaxChar: ', stringLength, ' Result: ', result);
-        console.log('=====');
+        //this._showDebug('@Card Filter [', name, '] @ _shortenString', string, ' MaxChar: ', stringLength, ' Result: ', result);
+        this._showDebug('=====');
         return output;
     },
     _checkMissing: function (portfolioType, item) {
@@ -269,7 +275,7 @@ Ext.define('App.Card', {
                 output = 'Not Assigned';
             }
             if (item === 'QRWP') {
-                output = 'Not Assigned';
+                output = 'Missing';
             }
             if (item === 'Parent') {
                 output = 'Missing';
@@ -284,14 +290,14 @@ Ext.define('App.Card', {
                 output = 'Not Assigned';
             }
             if (item === 'QRWP') {
-                output = 'Not Assigned';
+                output = 'Not Required';
             }
             if (item === 'Parent') {
                 output = 'Missing';
             }
         }
-        console.log('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
-        console.log('=====');
+        //this._showDebug('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
+        this._showDebug('=====');
         return output;
     }
 });
