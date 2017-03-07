@@ -11,6 +11,7 @@
     singleton: true,
     printHtml: '',
     supportArray: [],
+    infoString: '',
     // Needs automating!
     portfolioType: [
         'PortfolioItem/BUStrategicObjectives',
@@ -63,6 +64,8 @@ Ext.define('PrintApp', {
                 html: '',
                 id: 'myHeader',
                 itemId: 'header',
+                margin: '10 5 5 10',
+                padding: '5 5 5 5',
                 listeners: {
                     add: function () {
                         console.log('@ Launch Added Panel');
@@ -70,18 +73,27 @@ Ext.define('PrintApp', {
                     scope: me
                 },
                 items: [{
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'These work together',
+                    id: 'panel_Filter_Multi',
+                    itemId: 'panel_Filter_Multi',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    cls: 'mainPageGroupPanel',
+                    items: [{
                         xtype: 'rallyusersearchcombobox',
                         storeConfig: {
                             model: 'PortfolioItem'
                         },
-                        fieldLabel: 'Filter by Owner:',
+                        fieldLabel: 'Team Member:',
                         project: this.getContext().getProject(),
                         //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
                         itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
                         //labelAlign: 'right',
                         id: 'user-combobox',
                         // multiSelect: true, // <------------explore this
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         //emptyText: 'All Users',
                         noEntryText: '-- All --',
                         //noEntryValue: 'All',
@@ -99,7 +111,7 @@ Ext.define('PrintApp', {
                         fieldLabel: 'Select',
                         labelAlign: 'left',
                         id: 'portfolio-combobox',
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         listeners: {
                             select: function () {
                                 console.log('@ Launch User Selected [ Item ]');
@@ -107,17 +119,26 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    }, {
+                    }, ]
+                }, {
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'Standalone',
+                    id: 'panel_Filter_Single',
+                    itemId: 'panel_Filter_Single',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    items: [{
                         xtype: 'rallysearchcombobox',
                         storeConfig: {
                             model: 'PortfolioItem'
                         },
                         itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
                         fieldLabel: 'Search',
-                        labelAlign: 'right',
+                        labelAlign: 'left',
+                        width: 350,
                         id: 'search-combobox',
-                        width: 300,
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         listeners: {
                             specialkey: function (field, e) {
                                 if (e.getKey() === e.ENTER) {
@@ -131,23 +152,40 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    },
-                    {
+                    }]
+                }, {
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'Actions',
+                    id: 'panel_Filter_Action',
+                    itemId: 'panel_filter_Actions',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    items: [{
                         xtype: 'button',
                         text: 'Print Results',
-                        margin: '5 5 5 20',
+                        margin: '0 5 0 5',
                         handler: this._getPrint,
+                        style: {
+                            background: '#00AEEF'
+                        },
                         listeners: {
                             add: function () {
                                 console.log('@ Launch Added Print Button');
                             },
                             scope: me
-                        }
-                    },
-                    {
+                        },
+
+                    }, {
+                        xtype: 'component',
+                        flex: 1
+                    }, {
                         xtype: 'button',
                         text: 'Support',
-                        margin: '5 5 5 20',
+                        margin: '0 5 0 5',
+                        style: {
+                            background: 'red'
+                        },
                         listeners: {
                             afterrender: function (v) {
                                 v.el.on('click', function () {
@@ -157,8 +195,8 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    }
-                ],
+                    }]
+                }],
             }, {
                 xtype: 'container',
                 layout: 'fit',
@@ -174,14 +212,11 @@ Ext.define('PrintApp', {
                     margin: '10 5 5 10',
                     height: 40,
                     width: '100%',
-                    style: {
-                        background: '#ff6600',
-                        border: '1px solid',
-                    },
+
                     autoEl: {
                         tag: 'div',
                         cls: 'myInfoPanel',
-                        html: '',
+                        html: 'Searching...',
                     },
                     listeners: {
                         add: function () {
@@ -283,29 +318,32 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        //   console.log('@ _loadData load() fired going to _createResults ', myData);
-
-                        Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header','the test string'));
+                        console.log('@ _loadData load() fired going to _createResults ', myData);
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
                 fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
             });
-            //console.log('@ _loadData New store request');
+            console.log('@ _loadData New store request');
 
         }
     },
     _createResults: function (myData) {
+        var itemType;
         //console.log('@ _createResults Building HTML based on [myData] passed by the store');
         MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x]);
+            itemType = myData[x].raw._type;
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
         this._unmask();
+        MySharedData.infoString += Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header', '<style="color:blue;">Found</style> ', x, ' Portfolio items that match your search criteria'));
+
         MySharedData.printHtml = html;
+
     },
     _getPrint: function () {
         //console.log('@ _getPrint Print requested');
@@ -336,10 +374,10 @@ Ext.define('PrintApp', {
     singleton: true,
     config: {
         // Versioning
-        Pversion: 'v3.0b',
+        Pversion: 'v4.0b',
         PappID: 'AC Print Portfolio Items',
         Powner: 'Richard Cook',
-        PreleaseDate: '2017-03-06 : 14:38',
+        PreleaseDate: '2017-03-07 : 13:27',
         Pdescription: 'Print Portfolio Items',
         // Git Repo Details
         PrepoAddress: 'not shared',
@@ -445,12 +483,10 @@ Ext.define('PrintApp', {
         //
         if (data.raw.Parent) {
             this._showDebug('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
-            myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
-            myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type, 'Parent');
+            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75, data.raw._type, 'Parent');
         } else {
             this._showDebug('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
-            myParentIDName = "";
-            myParentID = this._checkMissing(data.raw._type, 'Parent');
+            myParentIDName = this._checkMissing(data.raw._type, 'Parent');
         }
         //========================================================================================================================================================================
         //
@@ -476,7 +512,7 @@ Ext.define('PrintApp', {
         //
         if (data.raw._refObjectName) {
             this._showDebug('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
-            myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type, 'Name');
+            myName = this._shortenString(data.raw._refObjectName, 84, data.raw._type, 'Name');
         } else {
             this._showDebug('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
             myName = 'No Name';
@@ -496,31 +532,67 @@ Ext.define('PrintApp', {
         }
         myId = data.raw.FormattedID;
         // NASTY HACK FOR ExtJS (Inline CSS builds) //
-        var cssStyleTag_Start = ' style="';
-        var cssStyleTag_End = '"';
-        var cssCropmarks = cssStyleTag_Start + 'border: 2px dashed #cccccc;padding: 10px;position: relative;float: left' + cssStyleTag_End;
-        var cssArtifacts = cssStyleTag_Start + 'border: 3px solid #000;width: 260px;white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
-        var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
-        var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
-        var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
-        var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
+        var font = 'font-family: verdana, Geneva, sans-serif;';
+        var css_Font______PUID = font + 'font-size:18px;';
+        var css_Font_Px_Copy_L = font + 'font-size:12px;';
+        var css_Font_Px_Copy_M = font + 'font-size:11px;';
+        var css_Padding_5 = 'padding:5px;';
+        var css_Bold = 'font-weight:bold;';
+        var css_NORM = 'font-weight:normal;';
+        var css_Text_Align_L = 'text-align:left;';
+        var css_Div_Height_PUID = 'height:33px;';
+        var css_Div_Height_Name = 'height:55px;';
+        var css_Div_Height_Prnt = 'height:55px;';
+        var css_Div_Height_Node = 'height:55px;';
+        var css_Div_Height_Rele = 'height:23px;';
+        var css_Div_Height_QRWP = 'height:23px;';
+        var css_Div_Height__OBN = 'height:23px;';
+        var css_Div_Height_Size = 'height:23px;';
+        var css_Div_Height_Owne = 'height:23px;';
+        var css_Div_Height_Colo = 'height:30px;';
+        var css_Border_Dashed_B = 'border-bottom: 1px dashed grey;';
+        var css_Border_solid__B = 'border-bottom: 1px solid black;';
+        var css_Border____Blank = 'border: none;'; //<-- Not needed but keeps the formatting clean below
+        var css_Start = ' style="';
+        var css_End = '"';
+        var colour_Background_Darken = Ext.create('App.Tools')._shadeBlendConvert(data.raw.DisplayColor, -60);
+
+        var colour_Background = 'background: repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
+        // Headings
+        //var css_Heading_Style_Start = css_Header_Span_Start + css_Heading_Color + css_Header_Span_End;
+
+
+        var css_Cut_Outs = css_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left;page-break-inside: avoid' + css_End;
+        var css_Card_Con = css_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;'+ css_End;
+        // Main CSS Content
+        var css_Row_PUID = css_Div_Height_PUID + css_Border_solid__B + css_Text_Align_L + css_Font______PUID + css_Bold + css_Padding_5;
+        var css_Row_Name = css_Div_Height_Name + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_L + css_NORM + css_Padding_5;
+        var css_Row_Prnt = css_Div_Height_Prnt + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Node = css_Div_Height_Node + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Rele = css_Div_Height_Rele + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_QRWP = css_Div_Height_QRWP + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row__OBN = css_Div_Height__OBN + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Size = css_Div_Height_Size + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Owne = css_Div_Height_Owne + css_Border_solid__B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Colo = css_Div_Height_Colo + css_Border____Blank + colour_Background;
+        var cssClearBoth = css_Start + 'clear:both' + css_End;
+
+
+
+
         var theMarkup =
-            '<div class="crop-marks" ' + cssCropmarks + '>' +
-            '<div class="artifact" ' + cssArtifacts + '>' +
-            '<div class="row_id" ' + cssRow_Id + '>' + myId + '</div>' +
-            '<div class="row_name" ' + cssRow_Name + '><span style="color:#ff6600">Name:</span> ' + myName + '</div>' +
-            '<div class="row_parent" ' + cssRow_Parent + '><span style="color:#ff6600">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
-            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Node:</span> ' + myNode + '</div>' +
-            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Release:</span> ' + myRelease + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">QRWP:</span> ' + myQRWP + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">OBN:</span> ' + myOBN + '</div>' +
-            '<div class="row_normal_last" ' + cssRow_Normal + '><span style="color:#ff6600">Owner:</span> ' + myOwner + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal_Last + '><span style="color:#ff6600">T-Shirt Size:</span> ' + myEstimate + '</div>' +
-            '<div class="row_colour" ' + cssRow_Colour + '>&nbsp;</div>' +
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
             '</div>' +
             '</div>';
         // Printing Layout Shaper 2 x 2 cards
@@ -532,10 +604,18 @@ Ext.define('PrintApp', {
         this._showDebug('===== @Card Ending !!!');
         return theMarkup;
     },
-    _showDebug: function (msg){
-        if(this.debugShow===true){
-            console.log(msg);
+    _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
+        var content,output;
+            console.log('triggered');
+        if (div_Heading === '' || div_Content === '') {
+            // Must be an empty div
+            content = '&nbsp;';
+        } else {
+            // Normal
+            content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
         }
+        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">'+content+'</div>';
+        return output;
     },
     _print: function (data) {
         var title, options, printWindow, doc;
@@ -654,24 +734,67 @@ Ext.define('PrintApp', {
         //this._showDebug('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
         this._showDebug('=====');
         return output;
+    },
+    _showDebug: function (msg) {
+        if (this.debugShow === true) {
+            console.log(msg);
+        }
     }
 });
                 Ext.define('App.Info', {
     theMarkup: null,
-    debugShow: false,
-    _build: function (style,text) {
+    debugShow: true,
+    _build: function (style,startString,data,endString) {
         this._showDebug('===== @Info Happy Birthday!');
         this._showDebug('@Info Class Saying Hi! - I build the output HTML for displaying the info bar');
         this._showDebug('=====');
         var output;
         if(style==='header'){
-
-            output = '<h1>'+text+'</h1>';
-
+            output = '<p style="font-size:25px;font-weight:bolder;margin:0;padding:0"><span style="color:#00AEEF;">'+startString+' </span><span style="color:black;">'+data+' '+endString+'</span></p>';
+        }
+        if(style==='paragraph'){
+            output = '<p>'+startString+' '+data+' '+endString+'</p>';
         }
         return output;
-    }});
+    },
+
+    _showDebug: function (msg){
+        if(this.debugShow===true){
+            console.log(msg);
+        }
+    },
+});
     
+                Ext.define('App.Tools', {
+    theMarkup: null,
+    debugShow: true,
+    _shadeBlendConvert: function (color, percent) {
+
+    var R = parseInt(color.substring(1,3),16);
+    var G = parseInt(color.substring(3,5),16);
+    var B = parseInt(color.substring(5,7),16);
+
+    R = parseInt(R * (100 + percent) / 100);
+    G = parseInt(G * (100 + percent) / 100);
+    B = parseInt(B * (100 + percent) / 100);
+
+    R = (R<255)?R:255;  
+    G = (G<255)?G:255;  
+    B = (B<255)?B:255;  
+
+    var RR = ((R.toString(16).length===1)?"0"+R.toString(16):R.toString(16));
+    var GG = ((G.toString(16).length===1)?"0"+G.toString(16):G.toString(16));
+    var BB = ((B.toString(16).length===1)?"0"+B.toString(16):B.toString(16));
+
+    return "#"+RR+GG+BB;
+    },
+
+    _showDebug: function (msg) {
+        if (this.debugShow === true) {
+            console.log(msg);
+        }
+    },
+});
                 Ext.define('App.Version', {
     constructor: function () {
         console.log('Version Class Saying Hi! - I output the Ext JS version');
@@ -801,6 +924,21 @@ Ext.define('PrintApp', {
     /* page-break-before: always; */
     /* clear: both; */
   }
+}
+.x-body {
+  color: red;
+}
+.x-panel-header-text-container-default {
+  color: #145FAC;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: ProximaNova,Helvetica,Arial;
+  text-transform: capitalize;
+}
+#panel_Filter_Multi-body,
+#panel_Filter_Single-body,
+#panel_Filter_Actions-body {
+  border: 1px dashed #00AEEF !important;
 }
 
     </style>

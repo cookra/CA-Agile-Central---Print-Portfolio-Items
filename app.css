@@ -16,3 +16,16 @@
     }
 }
 
+.x-body{
+    color: red;
+}
+.x-panel-header-text-container-default {
+    color: #145FAC;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: ProximaNova,Helvetica,Arial;
+    text-transform: capitalize;
+}
+#panel_Filter_Multi-body, #panel_Filter_Single-body, #panel_Filter_Actions-body{
+    border: 1px dashed #00AEEF !important;
+}

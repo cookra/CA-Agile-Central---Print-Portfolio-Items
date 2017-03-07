@@ -8,6 +8,7 @@
         "App/Runtime.js",
         "App/Card.js",
         "App/Info.js",
+        "App/Tools.js",
         "App/Version.js",
         "App/Emailer.js"
     ],

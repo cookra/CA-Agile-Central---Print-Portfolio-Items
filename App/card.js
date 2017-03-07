@@ -90,12 +90,10 @@ Ext.define('App.Card', {
         //
         if (data.raw.Parent) {
             this._showDebug('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
-            myParentID = 'Parent: ' + data.raw.Parent.FormattedID;
-            myParentIDName = this._shortenString(data.raw.Parent.Name, 50, data.raw._type, 'Parent');
+            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75, data.raw._type, 'Parent');
         } else {
             this._showDebug('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
-            myParentIDName = "";
-            myParentID = this._checkMissing(data.raw._type, 'Parent');
+            myParentIDName = this._checkMissing(data.raw._type, 'Parent');
         }
         //========================================================================================================================================================================
         //
@@ -121,7 +119,7 @@ Ext.define('App.Card', {
         //
         if (data.raw._refObjectName) {
             this._showDebug('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
-            myName = this._shortenString(data.raw._refObjectName, 135, data.raw._type, 'Name');
+            myName = this._shortenString(data.raw._refObjectName, 84, data.raw._type, 'Name');
         } else {
             this._showDebug('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
             myName = 'No Name';
@@ -141,69 +139,67 @@ Ext.define('App.Card', {
         }
         myId = data.raw.FormattedID;
         // NASTY HACK FOR ExtJS (Inline CSS builds) //
-        var font = 'font-family: verdana, Geneva, sans-serif ';
-        var font______PUID = font + '20px;';
-        var font_Px_Copy_L = font + '15px;';
-        var font_Px_Copy_M = font + '12px;';
-        var fontStyle_Padding_5 = 'padding:5px;';
-        var fontStyle_Bold = 'font-weight:bold;';
-        var text_align_L = 'text-align:left;';
-        var div_Height_PUID = 'height:30px;';
-        var div_Height_Name = 'height:90px;';
-        var div_Height_Prnt = 'height:55px;';
-        var div_Height_Node = 'height:40px;';
-        var div_Height_Rele = 'height:30px;';
-        var div_Height_QRWP = 'height:30px;';
-        var div_Height__OBN = 'height:30px;';
-        var div_Height_Size = 'height:30px;';
-        var div_Height_Owne = 'height:30px;';
-        var div_Height_Colo = 'height:30px;';
-        var border_dashed_B = 'border-bottom: 1px dashed black;';
-        var border_dashed_L = '';
-        var cssStyleTag_Start = ' style="';
-        var cssStyleTag_End = '"';
+        var font = 'font-family: verdana, Geneva, sans-serif;';
+        var css_Font______PUID = font + 'font-size:18px;';
+        var css_Font_Px_Copy_L = font + 'font-size:12px;';
+        var css_Font_Px_Copy_M = font + 'font-size:11px;';
+        var css_Padding_5 = 'padding:5px;';
+        var css_Bold = 'font-weight:bold;';
+        var css_NORM = 'font-weight:normal;';
+        var css_Text_Align_L = 'text-align:left;';
+        var css_Div_Height_PUID = 'height:33px;';
+        var css_Div_Height_Name = 'height:55px;';
+        var css_Div_Height_Prnt = 'height:55px;';
+        var css_Div_Height_Node = 'height:55px;';
+        var css_Div_Height_Rele = 'height:23px;';
+        var css_Div_Height_QRWP = 'height:23px;';
+        var css_Div_Height__OBN = 'height:23px;';
+        var css_Div_Height_Size = 'height:23px;';
+        var css_Div_Height_Owne = 'height:23px;';
+        var css_Div_Height_Colo = 'height:30px;';
+        var css_Border_Dashed_B = 'border-bottom: 1px dashed grey;';
+        var css_Border_solid__B = 'border-bottom: 1px solid black;';
+        var css_Border____Blank = 'border: none;'; //<-- Not needed but keeps the formatting clean below
+        var css_Start = ' style="';
+        var css_End = '"';
+        var colour_Background_Darken = Ext.create('App.Tools')._shadeBlendConvert(data.raw.DisplayColor, -60);
+
+        var colour_Background = 'background: repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
+        // Headings
+        //var css_Heading_Style_Start = css_Header_Span_Start + css_Heading_Color + css_Header_Span_End;
 
 
-/*
+        var css_Cut_Outs = css_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left;page-break-inside: avoid' + css_End;
+        var css_Card_Con = css_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;'+ css_End;
+        // Main CSS Content
+        var css_Row_PUID = css_Div_Height_PUID + css_Border_solid__B + css_Text_Align_L + css_Font______PUID + css_Bold + css_Padding_5;
+        var css_Row_Name = css_Div_Height_Name + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_L + css_NORM + css_Padding_5;
+        var css_Row_Prnt = css_Div_Height_Prnt + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Node = css_Div_Height_Node + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Rele = css_Div_Height_Rele + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_QRWP = css_Div_Height_QRWP + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row__OBN = css_Div_Height__OBN + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Size = css_Div_Height_Size + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Owne = css_Div_Height_Owne + css_Border_solid__B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Colo = css_Div_Height_Colo + css_Border____Blank + colour_Background;
+        var cssClearBoth = css_Start + 'clear:both' + css_End;
 
-        var cssCropmarks = cssStyleTag_Start + 'border: 1px dashed #00AEEF;padding: 10px;position: relative;float: left' + cssStyleTag_End;
-        var cssArtifacts = cssStyleTag_Start + 'border: 1px solid #000;width: 100%;white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
-        var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px solid black;text-align: left;width: 250px;'+font+'font-size:'+fontSize+'px;font-style:'+fontStyle+'padding: 5px;' + cssStyleTag_End;
-        var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed #00AEEF;text-align: left;width: 250px;font: bolder 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
-        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
-        var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 1px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
-        var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
-        */
-        var cssCropmarks = cssStyleTag_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left' + cssStyleTag_End;
-        var cssArtifacts = cssStyleTag_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
-        
-        var cssRow_PUID = cssStyleTag_Start + div_Height_PUID + border_dashed_B + text_align_L + font______PUID + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Name = cssStyleTag_Start + div_Height_Name + border_dashed_B + text_align_L + font_Px_Copy_L + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Prnt = cssStyleTag_Start + div_Height_Prnt + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Node = cssStyleTag_Start + div_Height_Node + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Rele = cssStyleTag_Start + div_Height_Rele + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_QRWP = cssStyleTag_Start + div_Height_QRWP + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow__OBN = cssStyleTag_Start + div_Height__OBN + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Owne = cssStyleTag_Start + div_Height_Owne + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Size = cssStyleTag_Start + div_Height_Size + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
-        var cssRow_Colo = cssStyleTag_Start + div_Height_Colo + border_dashed_L + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + 'background:' + data.raw.DisplayColor + cssStyleTag_End;
-        var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
+
+
+
         var theMarkup =
-            '<div class="crop-marks" ' + cssCropmarks + '>' +
-            '<div class="artifact" ' + cssArtifacts + '>' +
-            '<div class="cssRow_PUID" ' + cssRow_PUID + '>' + myId + '</div>' +
-            '<div class="cssRow_Name" ' + cssRow_Name + '><span style="color:#145FAC">Name:</span> ' + myName + '</div>' +
-            '<div class="cssRow_Prnt" ' + cssRow_Prnt + '><span style="color:#145FAC">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
-            '<div class="cssRow_Node" ' + cssRow_Node + '><span style="color:#145FAC">Node:</span> ' + myNode + '</div>' +
-            '<div class="cssRow_Rele" ' + cssRow_Rele + '><span style="color:#145FAC">Release:</span> ' + myRelease + '</div>' +
-            '<div class="cssRow_QRWP" ' + cssRow_QRWP + '><span style="color:#145FAC">QRWP:</span> ' + myQRWP + '</div>' +
-            '<div class="cssRow__OBN" ' + cssRow__OBN + '><span style="color:#145FAC">OBN:</span> ' + myOBN + '</div>' +
-            '<div class="cssRow_Size" ' + cssRow_Size + '><span style="color:#145FAC">T-Shirt Size:</span> ' + myEstimate + '</div>' +
-            '<div class="cssRow_Owne" ' + cssRow_Owne + '><span style="color:#145FAC">Owner:</span> ' + myOwner + '</div>' +
-            '<div class="cssRow_Colo" ' + cssRow_Colo + '>&nbsp;</div>' +
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
             '</div>' +
             '</div>';
         // Printing Layout Shaper 2 x 2 cards
@@ -214,6 +210,19 @@ Ext.define('App.Card', {
         }
         this._showDebug('===== @Card Ending !!!');
         return theMarkup;
+    },
+    _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
+        var content,output;
+            console.log('triggered');
+        if (div_Heading === '' || div_Content === '') {
+            // Must be an empty div
+            content = '&nbsp;';
+        } else {
+            // Normal
+            content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
+        }
+        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">'+content+'</div>';
+        return output;
     },
     _print: function (data) {
         var title, options, printWindow, doc;

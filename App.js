@@ -55,6 +55,8 @@ Ext.define('PrintApp', {
                 html: '',
                 id: 'myHeader',
                 itemId: 'header',
+                margin: '10 5 5 10',
+                padding: '5 5 5 5',
                 listeners: {
                     add: function () {
                         console.log('@ Launch Added Panel');
@@ -62,18 +64,27 @@ Ext.define('PrintApp', {
                     scope: me
                 },
                 items: [{
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'These work together',
+                    id: 'panel_Filter_Multi',
+                    itemId: 'panel_Filter_Multi',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    cls: 'mainPageGroupPanel',
+                    items: [{
                         xtype: 'rallyusersearchcombobox',
                         storeConfig: {
                             model: 'PortfolioItem'
                         },
-                        fieldLabel: 'Filter by Owner:',
+                        fieldLabel: 'Team Member:',
                         project: this.getContext().getProject(),
                         //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
                         itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
                         //labelAlign: 'right',
                         id: 'user-combobox',
                         // multiSelect: true, // <------------explore this
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         //emptyText: 'All Users',
                         noEntryText: '-- All --',
                         //noEntryValue: 'All',
@@ -91,7 +102,7 @@ Ext.define('PrintApp', {
                         fieldLabel: 'Select',
                         labelAlign: 'left',
                         id: 'portfolio-combobox',
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         listeners: {
                             select: function () {
                                 console.log('@ Launch User Selected [ Item ]');
@@ -99,17 +110,26 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    }, {
+                    }, ]
+                }, {
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'Standalone',
+                    id: 'panel_Filter_Single',
+                    itemId: 'panel_Filter_Single',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    items: [{
                         xtype: 'rallysearchcombobox',
                         storeConfig: {
                             model: 'PortfolioItem'
                         },
                         itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
                         fieldLabel: 'Search',
-                        labelAlign: 'right',
+                        labelAlign: 'left',
+                        width: 350,
                         id: 'search-combobox',
-                        width: 300,
-                        margin: '5 5 5 5',
+                        margin: '0 5 0 0',
                         listeners: {
                             specialkey: function (field, e) {
                                 if (e.getKey() === e.ENTER) {
@@ -123,11 +143,19 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    },
-                    {
+                    }]
+                }, {
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    title: 'Actions',
+                    id: 'panel_Filter_Action',
+                    itemId: 'panel_filter_Actions',
+                    margin: '10 5 5 10',
+                    bodyPadding: 5,
+                    items: [{
                         xtype: 'button',
                         text: 'Print Results',
-                        margin: '5 5 5 20',
+                        margin: '0 5 0 5',
                         handler: this._getPrint,
                         style: {
                             background: '#00AEEF'
@@ -137,12 +165,15 @@ Ext.define('PrintApp', {
                                 console.log('@ Launch Added Print Button');
                             },
                             scope: me
-                        }
-                    },
-                    {
+                        },
+
+                    }, {
+                        xtype: 'component',
+                        flex: 1
+                    }, {
                         xtype: 'button',
                         text: 'Support',
-                        margin: '5 5 5 20',
+                        margin: '0 5 0 5',
                         style: {
                             background: 'red'
                         },
@@ -155,8 +186,8 @@ Ext.define('PrintApp', {
                             },
                             scope: me
                         }
-                    }
-                ],
+                    }]
+                }],
             }, {
                 xtype: 'container',
                 layout: 'fit',
@@ -172,10 +203,7 @@ Ext.define('PrintApp', {
                     margin: '10 5 5 10',
                     height: 40,
                     width: '100%',
-                    style: {
-                        //background: '#ff6600',
-                        //border: '1px solid',
-                    },
+
                     autoEl: {
                         tag: 'div',
                         cls: 'myInfoPanel',
