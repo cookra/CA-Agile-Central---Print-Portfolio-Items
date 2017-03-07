@@ -2,6 +2,7 @@ Ext.define('MySharedData', {
     singleton: true,
     printHtml: '',
     supportArray: [],
+    infoString: '',
     // Needs automating!
     portfolioType: [
         'PortfolioItem/BUStrategicObjectives',
@@ -40,7 +41,6 @@ Ext.define('PrintApp', {
         var xData3 = this.getContext().getWorkspace();
         var xData4 = this.getContext().getSubscription();
         var gEpros = App.Emailer; // shorten global property string
-        var gRpros = App.Runtime; // shorten global property string
         var layout = Ext.create('Ext.container.Container', {
             layout: 'fit',
             align: 'stretch',
@@ -49,110 +49,146 @@ Ext.define('PrintApp', {
                 align: 'stretch',
             },
             items: [{
-                    xtype: 'panel',
-                    border: false,
-                    layout: 'hbox',
-                    html: '',
-                    id: 'myHeader',
-                    itemId: 'header',
+                xtype: 'panel',
+                border: false,
+                layout: 'hbox',
+                html: '',
+                id: 'myHeader',
+                itemId: 'header',
+                listeners: {
+                    add: function () {
+                        console.log('@ Launch Added Panel');
+                    },
+                    scope: me
+                },
+                items: [{
+                        xtype: 'rallyusersearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        fieldLabel: 'Filter by Owner:',
+                        project: this.getContext().getProject(),
+                        //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                        itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
+                        //labelAlign: 'right',
+                        id: 'user-combobox',
+                        // multiSelect: true, // <------------explore this
+                        margin: '5 5 5 5',
+                        //emptyText: 'All Users',
+                        noEntryText: '-- All --',
+                        //noEntryValue: 'All',
+                        defaultSelectionPosition: 'first',
+                        listeners: {
+                            select: function () {
+                                console.log('@ Launch User Selected [ User ]');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, {
+                        xtype: 'rallyportfolioitemtypecombobox',
+                        itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Select',
+                        labelAlign: 'left',
+                        id: 'portfolio-combobox',
+                        margin: '5 5 5 5',
+                        listeners: {
+                            select: function () {
+                                console.log('@ Launch User Selected [ Item ]');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, {
+                        xtype: 'rallysearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Search',
+                        labelAlign: 'right',
+                        id: 'search-combobox',
+                        width: 300,
+                        margin: '5 5 5 5',
+                        listeners: {
+                            specialkey: function (field, e) {
+                                if (e.getKey() === e.ENTER) {
+                                    console.log('@ Launch User Pressed [ Enter ]');
+                                    me._kickoff('Search');
+                                }
+                            },
+                            select: function () {
+                                console.log('@ Launch User Selected [ Search Value ]');
+                                me._kickoff('Search');
+                            },
+                            scope: me
+                        }
+                    },
+                    {
+                        xtype: 'button',
+                        text: 'Print Results',
+                        margin: '5 5 5 20',
+                        handler: this._getPrint,
+                        style: {
+                            background: '#00AEEF'
+                        },
+                        listeners: {
+                            add: function () {
+                                console.log('@ Launch Added Print Button');
+                            },
+                            scope: me
+                        }
+                    },
+                    {
+                        xtype: 'button',
+                        text: 'Support',
+                        margin: '5 5 5 20',
+                        style: {
+                            background: 'red'
+                        },
+                        listeners: {
+                            afterrender: function (v) {
+                                v.el.on('click', function () {
+                                    var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                    console.log('@ Launch Added Support Button');
+                                });
+                            },
+                            scope: me
+                        }
+                    }
+                ],
+            }, {
+                xtype: 'container',
+                layout: 'fit',
+                align: 'stretch',
+                height: '100%',
+                layoutConfig: {
+                    align: 'stretch',
+                },
+                items: [{
+                    xtype: 'box',
+                    id: 'myInfoPanel',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    height: 40,
+                    width: '100%',
+                    style: {
+                        //background: '#ff6600',
+                        //border: '1px solid',
+                    },
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myInfoPanel',
+                        html: 'Searching...',
+                    },
                     listeners: {
                         add: function () {
-                            console.log('@ Launch Added Panel');
+                            console.log('@ Launch Added Content Box');
                         },
                         scope: me
                     },
-                    items: [{
-                            xtype: 'rallyusersearchcombobox',
-                            storeConfig: {
-                                model: 'PortfolioItem'
-                            },
-                            fieldLabel: 'Filter by Owner:',
-                            project: this.getContext().getProject(),
-                            //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
-                            itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
-                            labelAlign: 'right',
-                            id: 'user-combobox',
-                            // multiSelect: true, // <------------explore this
-                            margin: '5 5 5 5',
-                            //emptyText: 'All Users',
-                            noEntryText: '-- All --',
-                            //noEntryValue: 'All',
-                            defaultSelectionPosition: 'first',
-                            listeners: {
-                                select: function () {
-                                    console.log('@ Launch User Selected [ User ]');
-                                    me._kickoff('User');
-                                },
-                                scope: me
-                            }
-                        }, {
-                            xtype: 'rallyportfolioitemtypecombobox',
-                            itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
-                            fieldLabel: 'Select',
-                            labelAlign: 'left',
-                            id: 'portfolio-combobox',
-                            margin: '5 5 5 5',
-                            listeners: {
-                                select: function () {
-                                    console.log('@ Launch User Selected [ Item ]');
-                                    me._kickoff('User');
-                                },
-                                scope: me
-                            }
-                        }, {
-                            xtype: 'rallysearchcombobox',
-                            storeConfig: {
-                                model: 'PortfolioItem'
-                            },
-                            itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
-                            fieldLabel: 'Search',
-                            labelAlign: 'right',
-                            id: 'search-combobox',
-                            width: 300,
-                            margin: '5 5 5 5',
-                            listeners: {
-                                specialkey: function (field, e) {
-                                    if (e.getKey() === e.ENTER) {
-                                        console.log('@ Launch User Pressed [ Enter ]');
-                                        me._kickoff('Search');
-                                    }
-                                },
-                                select: function () {
-                                    console.log('@ Launch User Selected [ Search Value ]');
-                                    me._kickoff('Search');
-                                },
-                                scope: me
-                            }
-                        },
-                        {
-                            xtype: 'button',
-                            text: 'Print Results',
-                            margin: '5 5 5 20',
-                            handler: this._getPrint,
-                            listeners: {
-                                add: function () {
-                                    console.log('@ Launch Added Print Button');
-                                },
-                                scope: me
-                            }
-                        },
-                        {
-                            xtype: 'button',
-                            text: 'Support',
-                            margin: '5 5 5 20',
-                            listeners: {
-                                afterrender: function (v) {
-                                    v.el.on('click', function () {
-                                        var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                        console.log('@ Launch Added Support Button');
-                                    });
-                                },
-                                scope: me
-                            }
-                        }
-                    ],
-                },
-                {
+                    flex: 1,
+                }, {
                     xtype: 'box',
                     id: 'myTarget',
                     autoScroll: true,
@@ -173,8 +209,12 @@ Ext.define('PrintApp', {
                         scope: me
                     },
                     flex: 1
-                }
-            ]
+
+
+
+                }]
+
+            }, ]
         });
         this.add(layout);
     },
@@ -185,13 +225,12 @@ Ext.define('PrintApp', {
     _getFilters: function (t) {
         var theFilter, p, pp, pc, folioFilter, userFilter;
         if (t === 'Search') {
-            pc = Ext.getCmp('search-combobox').getRecord().get('Name');
+            p = Ext.getCmp('search-combobox').getRecord().get('Name');
             theFilter = Ext.create('Rally.data.wsapi.Filter', {
                 property: 'Name',
                 operation: '=',
-                value: pc,
+                value: p,
             });
-            console.log('ffff ',theFilter);
         }
         if (t === 'User') {
             if (this.down('rallyusersearchcombobox').getValue() === null) {
@@ -242,28 +281,32 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        //   console.log('@ _loadData load() fired going to _createResults ', myData);
-
+                        console.log('@ _loadData load() fired going to _createResults ', myData);
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
                 fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
             });
-            //console.log('@ _loadData New store request');
+            console.log('@ _loadData New store request');
 
         }
     },
     _createResults: function (myData) {
+        var itemType;
         //console.log('@ _createResults Building HTML based on [myData] passed by the store');
         MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x]);
+            itemType = myData[x].raw._type;
         }
         html += '</div>';
         Ext.fly('myTarget').update(html);
         this._unmask();
+        MySharedData.infoString += Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header', '<style="color:blue;">Found</style> ', x, ' Portfolio items that match your search criteria'));
+
         MySharedData.printHtml = html;
+
     },
     _getPrint: function () {
         //console.log('@ _getPrint Print requested');

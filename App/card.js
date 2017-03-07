@@ -141,31 +141,69 @@ Ext.define('App.Card', {
         }
         myId = data.raw.FormattedID;
         // NASTY HACK FOR ExtJS (Inline CSS builds) //
+        var font = 'font-family: verdana, Geneva, sans-serif ';
+        var font______PUID = font + '20px;';
+        var font_Px_Copy_L = font + '15px;';
+        var font_Px_Copy_M = font + '12px;';
+        var fontStyle_Padding_5 = 'padding:5px;';
+        var fontStyle_Bold = 'font-weight:bold;';
+        var text_align_L = 'text-align:left;';
+        var div_Height_PUID = 'height:30px;';
+        var div_Height_Name = 'height:90px;';
+        var div_Height_Prnt = 'height:55px;';
+        var div_Height_Node = 'height:40px;';
+        var div_Height_Rele = 'height:30px;';
+        var div_Height_QRWP = 'height:30px;';
+        var div_Height__OBN = 'height:30px;';
+        var div_Height_Size = 'height:30px;';
+        var div_Height_Owne = 'height:30px;';
+        var div_Height_Colo = 'height:30px;';
+        var border_dashed_B = 'border-bottom: 1px dashed black;';
+        var border_dashed_L = '';
         var cssStyleTag_Start = ' style="';
         var cssStyleTag_End = '"';
-        var cssCropmarks = cssStyleTag_Start + 'border: 2px dashed #cccccc;padding: 10px;position: relative;float: left' + cssStyleTag_End;
-        var cssArtifacts = cssStyleTag_Start + 'border: 3px solid #000;width: 260px;white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
-        var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: left;width: 250px;font: bold 20px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
-        var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed black;text-align: left;width: 250px;font: 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
-        var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed black;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+
+
+/*
+
+        var cssCropmarks = cssStyleTag_Start + 'border: 1px dashed #00AEEF;padding: 10px;position: relative;float: left' + cssStyleTag_End;
+        var cssArtifacts = cssStyleTag_Start + 'border: 1px solid #000;width: 100%;white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
+        var cssRow_Id = cssStyleTag_Start + 'border-bottom: 1px solid black;text-align: left;width: 250px;'+font+'font-size:'+fontSize+'px;font-style:'+fontStyle+'padding: 5px;' + cssStyleTag_End;
+        var cssRow_Name = cssStyleTag_Start + 'height: 90px;border-bottom: 1px dashed #00AEEF;text-align: left;width: 250px;font: bolder 15px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
+        var cssRow_Parent = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height: 70px;' + cssStyleTag_End;
+        var cssRow_Large = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;height:30px;' + cssStyleTag_End;
+        var cssRow_Normal = cssStyleTag_Start + 'border-bottom: 1px dashed #00AEEF;text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
         var cssRow_Normal_Last = cssStyleTag_Start + 'text-align: right;width: 250px;font: bold 12px Genova, sans-serif;padding: 5px;' + cssStyleTag_End;
-        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 3px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
+        var cssRow_Colour = cssStyleTag_Start + '!important;border-top: 1px solid black;height: 30px;width: 100%;background:' + data.raw.DisplayColor + cssStyleTag_End;
+        var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
+        */
+        var cssCropmarks = cssStyleTag_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left' + cssStyleTag_End;
+        var cssArtifacts = cssStyleTag_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;page-break-inside: avoid' + cssStyleTag_End;
+        
+        var cssRow_PUID = cssStyleTag_Start + div_Height_PUID + border_dashed_B + text_align_L + font______PUID + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Name = cssStyleTag_Start + div_Height_Name + border_dashed_B + text_align_L + font_Px_Copy_L + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Prnt = cssStyleTag_Start + div_Height_Prnt + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Node = cssStyleTag_Start + div_Height_Node + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Rele = cssStyleTag_Start + div_Height_Rele + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_QRWP = cssStyleTag_Start + div_Height_QRWP + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow__OBN = cssStyleTag_Start + div_Height__OBN + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Owne = cssStyleTag_Start + div_Height_Owne + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Size = cssStyleTag_Start + div_Height_Size + border_dashed_B + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + cssStyleTag_End;
+        var cssRow_Colo = cssStyleTag_Start + div_Height_Colo + border_dashed_L + text_align_L + font_Px_Copy_M + fontStyle_Bold + fontStyle_Padding_5 + 'background:' + data.raw.DisplayColor + cssStyleTag_End;
         var cssClearBoth = cssStyleTag_Start + 'clear:both' + cssStyleTag_End;
         var theMarkup =
             '<div class="crop-marks" ' + cssCropmarks + '>' +
             '<div class="artifact" ' + cssArtifacts + '>' +
-            '<div class="row_id" ' + cssRow_Id + '>' + myId + '</div>' +
-            '<div class="row_name" ' + cssRow_Name + '><span style="color:#ff6600">Name:</span> ' + myName + '</div>' +
-            '<div class="row_parent" ' + cssRow_Parent + '><span style="color:#ff6600">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
-            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Node:</span> ' + myNode + '</div>' +
-            '<div class="row_normal" ' + cssRow_Large + '><span style="color:#ff6600">Release:</span> ' + myRelease + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">QRWP:</span> ' + myQRWP + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal + '><span style="color:#ff6600">OBN:</span> ' + myOBN + '</div>' +
-            '<div class="row_normal_last" ' + cssRow_Normal + '><span style="color:#ff6600">Owner:</span> ' + myOwner + '</div>' +
-            '<div class="row_normal" ' + cssRow_Normal_Last + '><span style="color:#ff6600">T-Shirt Size:</span> ' + myEstimate + '</div>' +
-            '<div class="row_colour" ' + cssRow_Colour + '>&nbsp;</div>' +
+            '<div class="cssRow_PUID" ' + cssRow_PUID + '>' + myId + '</div>' +
+            '<div class="cssRow_Name" ' + cssRow_Name + '><span style="color:#145FAC">Name:</span> ' + myName + '</div>' +
+            '<div class="cssRow_Prnt" ' + cssRow_Prnt + '><span style="color:#145FAC">Parent:</span> ' + myParentID + '<br/>' + myParentIDName + '</div>' +
+            '<div class="cssRow_Node" ' + cssRow_Node + '><span style="color:#145FAC">Node:</span> ' + myNode + '</div>' +
+            '<div class="cssRow_Rele" ' + cssRow_Rele + '><span style="color:#145FAC">Release:</span> ' + myRelease + '</div>' +
+            '<div class="cssRow_QRWP" ' + cssRow_QRWP + '><span style="color:#145FAC">QRWP:</span> ' + myQRWP + '</div>' +
+            '<div class="cssRow__OBN" ' + cssRow__OBN + '><span style="color:#145FAC">OBN:</span> ' + myOBN + '</div>' +
+            '<div class="cssRow_Size" ' + cssRow_Size + '><span style="color:#145FAC">T-Shirt Size:</span> ' + myEstimate + '</div>' +
+            '<div class="cssRow_Owne" ' + cssRow_Owne + '><span style="color:#145FAC">Owner:</span> ' + myOwner + '</div>' +
+            '<div class="cssRow_Colo" ' + cssRow_Colo + '>&nbsp;</div>' +
             '</div>' +
             '</div>';
         // Printing Layout Shaper 2 x 2 cards
@@ -176,11 +214,6 @@ Ext.define('App.Card', {
         }
         this._showDebug('===== @Card Ending !!!');
         return theMarkup;
-    },
-    _showDebug: function (msg){
-        if(this.debugShow===true){
-            console.log(msg);
-        }
     },
     _print: function (data) {
         var title, options, printWindow, doc;
@@ -299,5 +332,10 @@ Ext.define('App.Card', {
         //this._showDebug('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
         this._showDebug('=====');
         return output;
+    },
+    _showDebug: function (msg) {
+        if (this.debugShow === true) {
+            console.log(msg);
+        }
     }
 });

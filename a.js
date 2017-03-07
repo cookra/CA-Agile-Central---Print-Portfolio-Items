@@ -185,7 +185,7 @@ Ext.define('PrintApp', {
     _getFilters: function (t) {
         var theFilter, p, pp, folioFilter, userFilter;
         if (t === 'Search') {
-            p = this.down('rallyusersearchcombobox');
+            p = Ext.getCmp('search-combobox').getRecord().get('Name');
             theFilter = Ext.create('Rally.data.wsapi.Filter', {
                 property: 'Name',
                 operation: '=',
