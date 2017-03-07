@@ -50,7 +50,6 @@ Ext.define('PrintApp', {
             },
             items: [{
                     xtype: 'panel',
-                    width: 300,
                     border: false,
                     layout: 'hbox',
                     html: '',
@@ -69,15 +68,20 @@ Ext.define('PrintApp', {
                             },
                             fieldLabel: 'Filter by Owner:',
                             project: this.getContext().getProject(),
-                            value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                            //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
                             itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
                             labelAlign: 'right',
                             id: 'user-combobox',
+                            // multiSelect: true, // <------------explore this
                             margin: '5 5 5 5',
+                            //emptyText: 'All Users',
+                            noEntryText: '-- All --',
+                            //noEntryValue: 'All',
+                            defaultSelectionPosition: 'first',
                             listeners: {
-                                select: function (aa, bb, cc) {
-                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
-                                    me._kickoff('user');
+                                select: function () {
+                                    console.log('@ Launch User Selected [ User ]');
+                                    me._kickoff('User');
                                 },
                                 scope: me
                             }
@@ -90,8 +94,8 @@ Ext.define('PrintApp', {
                             margin: '5 5 5 5',
                             listeners: {
                                 select: function () {
-                                    console.log('@ Launch Added Portfolio Combobox');
-                                    me._kickoff('item');
+                                    console.log('@ Launch User Selected [ Item ]');
+                                    me._kickoff('User');
                                 },
                                 scope: me
                             }
@@ -108,18 +112,15 @@ Ext.define('PrintApp', {
                             margin: '5 5 5 5',
                             listeners: {
                                 specialkey: function (field, e) {
-                                    // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
-                                    // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
                                     if (e.getKey() === e.ENTER) {
-                                        me._kickoff('search');
-
+                                        console.log('@ Launch User Pressed [ Enter ]');
+                                        me._kickoff('Search');
                                     }
                                 },
-                                select: function (aa, bb, cc) {
-                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
-                                    me._kickoff('search');
+                                select: function () {
+                                    console.log('@ Launch User Selected [ Search Value ]');
+                                    me._kickoff('Search');
                                 },
-
                                 scope: me
                             }
                         },
@@ -131,7 +132,6 @@ Ext.define('PrintApp', {
                             listeners: {
                                 add: function () {
                                     console.log('@ Launch Added Print Button');
-
                                 },
                                 scope: me
                             }
@@ -180,49 +180,58 @@ Ext.define('PrintApp', {
     },
     _kickoff: function (type) {
         this._loadData(type);
-        //console.log('@ _kickoff going to _loadData');
+        console.log('@ _kickoff going to _loadData');
     },
-    _getFilters: function (type) {
-        if (type === 'item') {
-            var selectedItem = Ext.getCmp('portfolio-combobox').getRecord().get('_ref');
-            var theFilter = Ext.create('Rally.data.wsapi.Filter', {
-                property: 'PortfolioItemType',
-                operation: '=',
-                value: selectedItem,
-            });
-            console.log('ITEM');
-        }
-        if (type === 'search') {
-            var selectedItem = Ext.getCmp('search-combobox').getRecord().get('Name');
-            var theFilter = Ext.create('Rally.data.wsapi.Filter', {
+    _getFilters: function (t) {
+        var theFilter, p, pp, pc, folioFilter, userFilter;
+        if (t === 'Search') {
+            pc = Ext.getCmp('search-combobox').getRecord().get('Name');
+            theFilter = Ext.create('Rally.data.wsapi.Filter', {
                 property: 'Name',
                 operation: '=',
-                value: selectedItem,
+                value: pc,
             });
-            console.log('SEARCH');
+            console.log('ffff ',theFilter);
         }
-        if (type === 'user') {
-            var selectedItem = this.down('rallyusersearchcombobox');
-            //var selectedItem = Ext.getCmp('user-combobox').getRecord().get('_refObjectName');
-            var theFilter = Ext.create('Rally.data.wsapi.Filter', {
-                property: 'Owner',
-                value: selectedItem.getValue(),
-            });
-            console.log('USER ', selectedItem);
+        if (t === 'User') {
+            if (this.down('rallyusersearchcombobox').getValue() === null) {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                theFilter = folioFilter;
+            } else {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                pp = this.down('rallyusersearchcombobox');
+                userFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'owner',
+                    value: pp.getValue(),
+                });
+                theFilter = folioFilter.and(userFilter);
+            }
         }
-        console.log('@ _getFilters Switch [', type, '] returning [', theFilter.property, ' ', theFilter.operation, ' ', theFilter.value, '] to _loadData');
+        console.log('@ _getFilters Search [', t, ']');
+        p = undefined;
+        pp = undefined;
         return theFilter;
     },
     _loadData: function (type) {
-        console.log('@ _loadData working the store magic..');
+        //console.log('@ _loadData working the store magic..');
         this._mask("Going deep, searching...");
         var me = this;
         var myFilter = this._getFilters(type);
-        console.log('@ _loadData Exposed Filter [', myFilter, ']');
+        //console.log('@ _loadData Exposed Filter [', myFilter, ']');
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
-            console.log('@ _loadData We have been here already, using load() to fetch new data');
+            //console.log('@ _loadData We have been here already, using load() to fetch new data');
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
@@ -233,7 +242,7 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        console.log('@ _loadData load() fired going to _createResults ', myData);
+                        //   console.log('@ _loadData load() fired going to _createResults ', myData);
 
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
