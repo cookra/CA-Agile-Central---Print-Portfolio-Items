@@ -1,687 +1,296 @@
-Ext.define('CustomApp', {
+Ext.define('MySharedData', {
+    singleton: true,
+    printHtml: '',
+    supportArray: [],
+    // Needs automating!
+    portfolioType: [
+        'PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
+});
+
+Ext.define('PrintApp', {
     extend: 'Rally.app.App',
-    componentCls: 'app',
-    logger: new Rally.technicalservices.Logger(),
-    items: [
-        {xtype:'container',itemId:'message_box'},
-        {xtype:'container',itemId:'display_box', margin: 5},
-        {xtype:'tsinfolink'}
+    theStore: undefined, // app level references to the store and grid for easy access in various methods
+    printHtml: null,
+    theFetch: ['FormattedID',
+        'Name',
+        'Project',
+        'Owner',
+        'Size',
+        'DisplayColor',
+        'State',
+        'PreliminaryEstimate',
+        'Parent',
+        'Release',
+        'c_QRWP',
+        '_type',
+        'PortfolioItemType',
+        '_refObjectName',
+        'c_OrderBookNumberOBN'
     ],
-    launch: function() {
-        if (typeof(this.getAppId()) == 'undefined' ) {
-            // not inside Rally
-            this._showExternalSettingsDialog(this.getSettingsFields());
-        } else {
-            this._getData();
-        }
-    },
-    _getData: function() {
-        this.down('#message_box').update();
-    
-        this._getPortfolioItemNames().then({
-            scope: this,
-            success: function(pi_paths) {
-                if ( pi_paths.length > 0 ) {
-                    this._getPITreeStore(pi_paths);
-                }
-            },
-            failure: function(error) {
-                this.down('#message_box').update(error);
-            }
-        });
-    },
-    _getPortfolioItemNames:function() {
-        var deferred = Ext.create('Deft.Deferred');
-
-        this.calculate_story_field_name = this.getSetting('calculate_story_field_name');
-        this.calculate_defect_field_name = this.getSetting('calculate_defect_field_name');
-        this.calculate_original_field_name = this.getSetting('calculate_original_field_name');
-        this.include_defects = this.getSetting('include_defects');
-        
-        if ( this._needsSettings() ) {
-            deferred.reject("Select 'Edit App Settings' from the gear menu to configure fields to use for calculations");
-        } else {
-            Ext.create('Rally.data.wsapi.Store',{
-                model:'TypeDefinition',
-                filters: [{property:'TypePath',operator:'contains',value:'PortfolioItem/'}],
-                sorters: [{property:'Ordinal',direction:'Desc'}],
-                autoLoad: true,
-                listeners: {
-                    scope: this,
-                    load: function(store,records){
-                        var pi_names = [];
-                        Ext.Array.each(records,function(record){
-                            pi_names.push(Ext.util.Format.lowercase(record.get('TypePath')));
-                        });
-                        deferred.resolve(pi_names);
-                    }
-                }
-            });
-        }
-        return deferred.promise;
-    },
-    _needsSettings: function() {
-        if ( typeof(this.calculate_story_field_name) == 'undefined' ) {
-            this.logger.log("Missing field on story" ) ;
-            return true;
-        }
-        if ( typeof(this.calculate_defect_field_name) == 'undefined' ) {
-            this.logger.log("Missing field on defect");
-            return true;
-        } 
-        if ( typeof(this.calculate_original_field_name) == 'undefined' ) {
-            this.logger.log("Missing original value field");
-            return true;
-        } 
-        return false;
-  
-    },
-    _mask: function(message){
-        this.logger.log("Mask: ", message);
-        if ( this.sparkler ) { this.sparkler.destroy(); }
-        this.sparkler = new Ext.LoadMask(this, {msg:message});  
-        this.sparkler.show();
-    },
-    _unmask: function() {
-        if ( this.sparkler ) { this.sparkler.hide(); }
-    },
-    _getFieldsToFetch: function() {
-        var fields_to_fetch =  ['FormattedID','Name', 'State','Children',this.calculate_original_field_name,'PlannedStartDate','PlannedEndDate'];
-        
-        var additional_fields = this.getSetting('additional_fields_for_pis');
-        if ( typeof(additional_fields) == "string" ) {
-            additional_fields = additional_fields.split(',');
-        }
-        
-        Ext.Array.each(additional_fields, function(field) {
-            
-            if ( typeof(field) == 'object' ) {
-                fields_to_fetch.push(field.get('name'));
-            } else {
-                fields_to_fetch.push(field);
-            }
-        });
-        return fields_to_fetch;
-    },
-    _getPITreeStore: function(pi_paths) {
+    launch: function () {
+        console.log('\033[2J');
         var me = this;
-        this.logger.log("_getPITreeStore",pi_paths);
-        this._mask("Gathering Portfolio Item data...");
-        
-        Ext.create('Rally.data.wsapi.Store', {
-            model: pi_paths[0],
-            autoLoad: true,
-            listeners: {
-                scope: this,
-                load: function(store, top_pis, success) {
-                    var top_pi_hashes = [];
-                    var promises = [];
-                    Ext.Array.each(top_pis,function(top_pi){
-                        var pi_data = top_pi.getData();
-                        pi_data.__original_value = top_pi.get(me.calculate_original_field_name);
-                        pi_data.leaf = true;
-                        if ( top_pi.get('Children') && top_pi.get('Children').Count > 0 ) {
-                            pi_data.leaf = false;
-                            pi_data.expanded = false;
-                            pi_data.__is_top_pi = true;
-                            promises.push( me._getChildren(pi_data,pi_paths) );
-                        }
-                        top_pi_hashes.push(pi_data);
-                    });
-                    
-                    
-                    // extend the model to add additional fields
-                    var additional_fields = this.getSetting('additional_fields_for_pis');
-                    if ( typeof(additional_fields) == "string" ) {
-                        additional_fields = additional_fields.split(',');
-                    }
-                    
-                    var fields = [];
-                    Ext.Array.each(additional_fields, function(field) {
-                        
-                        if ( typeof(field) == 'object' ) {
-                            fields.push(field.get('name'));
-                        } else {
-                            fields.push(field);
-                        }
-                    });
-                        
-                    var model = {
-                        extend: 'TSTreeModel',
-                        fields: fields
-                    };
-                    
-                    Ext.define('TSTreeModelWithAdditions', model);
-                    
-                    Deft.Promise.all(promises).then({
-                        scope: this,
-                        success: function(node_hashes){
-                            this._mask("Structuring Data into Tree...");
-                            var tree_store = Ext.create('Ext.data.TreeStore',{
-                                model: TSTreeModelWithAdditions,
-                                root: {
-                                    expanded: false,
-                                    children: top_pi_hashes
-                                }
-                            });
-                            this._addTreeGrid(tree_store);
+        var xData1 = this.getContext().getUser();
+        var xData2 = this.getContext().getProject();
+        var xData3 = this.getContext().getWorkspace();
+        var xData4 = this.getContext().getSubscription();
+        var gEpros = App.Emailer; // shorten global property string
+        var gRpros = App.Runtime; // shorten global property string
+        var layout = Ext.create('Ext.container.Container', {
+            layout: 'fit',
+            align: 'stretch',
+            height: '100%',
+            layoutConfig: {
+                align: 'stretch',
+            },
+            items: [{
+                    xtype: 'panel',
+                    border: false,
+                    layout: 'hbox',
+                    html: '',
+                    id: 'myHeader',
+                    itemId: 'header',
+                    listeners: {
+                        add: function () {
+                            console.log('@ Launch Added Panel');
                         },
-                        failure:function (error) {
-                            alert(error);
-                        }
-                    });
-                    
-                }
-            },
-            fetch:me._getFieldsToFetch()
-        });
-    },
-    _getChildren:function(node_hash,pi_paths) {
-        var deferred = Ext.create('Deft.Deferred');
-        var me = this;
-        this._mask("Gathering Descendant Information...");
-        Ext.create('Rally.data.wsapi.Store',{
-            model: this._getChildModelForItem(node_hash,pi_paths),
-            filters: [
-                this._getChildFilterForItem(node_hash,pi_paths)
-            ],
-            fetch: ['FormattedID','Name','DirectChildrenCount','Children','AcceptedDate','ScheduleState','Defects',me.calculate_story_field_name],
-            context: { project: null },
-            autoLoad: true,
-            listeners: {
-                scope: this,
-                load: function(store, records) {
-                    var child_hashes = [];
-                    var promises = [];
-                    var total_rollup = 0;
-                    Ext.Array.each(records,function(record){
-                        var record_data = record.getData();
-                        record_data.leaf = true;
-
-                        if ( record.get('Children') && record.get('Children').Count > 0 ) {
-                            record_data.leaf = false;
-                            record_data.expanded = false;
-                            promises.push( me._getChildren(record_data,pi_paths) );
-                        } else if ( record.get('DirectChildrenCount') && record.get('DirectChildrenCount') > 0)  {
-                            record_data.leaf = false;
-                            record_data.expanded = false;
-                            promises.push( me._getChildren(record_data,pi_paths) );
-                        }
-                        
-                        if ( me.include_defects && record.get('Defects') && record.get('Defects').Count > 0 ) {
-                            record_data.leaf = false;
-                            promises.push( me._getDefects(record_data) );
-                        }
-                        
-                        // set value for calculating field
-                        record_data.__rollup = record.get(me.calculate_story_field_name);
-                        if ( me._isAccepted(record_data) ) {
-                            record_data.__accepted_rollup = record.get(me.calculate_story_field_name);
-                        }
-                        child_hashes.push(record_data);
-                    });
-                    
-                    if ( !node_hash.children ) {
-                        node_hash.children = [];
-                    }
-                    node_hash.children = Ext.Array.push(node_hash.children,child_hashes);
-                    
-                    if ( promises.length > 0 ) {
-                        Deft.Promise.all(promises).then({
-                            scope: this,
-                            success: function(records){
-                                node_hash.__rollup = this._calculateRollup(node_hash,child_hashes,'__rollup');
-                                node_hash.__accepted_rollup = this._calculateRollup(node_hash,child_hashes,'__accepted_rollup');
-                                deferred.resolve(node_hash);
+                        scope: me
+                    },
+                    items: [{
+                            xtype: 'rallyusersearchcombobox',
+                            storeConfig: {
+                                model: 'PortfolioItem'
                             },
-                            failure: function(error) {
-                                deferred.reject(error);
+                            fieldLabel: 'Filter by Owner:',
+                            project: this.getContext().getProject(),
+                            //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                            itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
+                            labelAlign: 'right',
+                            id: 'user-combobox',
+                            // multiSelect: true, // <------------explore this
+                            margin: '5 5 5 5',
+                            //emptyText: 'All Users',
+                            noEntryText: '-- All --',
+                            //noEntryValue: 'All',
+                            listeners: {
+                                select: function (aa, bb, cc) {
+                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
+                                    me._kickoff('user');
+                                },
+                                load: function (store) {
+                                    store.add({
+                                        name: 'Dummy'
+                                    });
+                                },
+                                scope: me
                             }
-                        });
-                    } else {
-                        node_hash.__rollup = this._calculateRollup(node_hash,child_hashes,'__rollup');
-                        node_hash.__accepted_rollup = this._calculateRollup(node_hash,child_hashes,'__accepted_rollup');
-                        deferred.resolve();
-                    }
-                }
-            }
-        });
-        return deferred.promise;
-    },
-    _getDefects:function(node_hash) {
-        var deferred = Ext.create('Deft.Deferred');
-        var me = this;
-        Ext.create('Rally.data.wsapi.Store',{
-            model: 'Defect',
-            filters: [
-                this._getDefectFilterForItem(node_hash)
-            ],
-            fetch: ['FormattedID','Name','AcceptedDate','State', me.calculate_defect_field_name],
-            context: { project: null },
-            autoLoad: true,
-            listeners: {
-                scope: this,
-                load: function(store, records) {
-                    var total_rollup = 0;
-                    var child_hashes = [];
-                    Ext.Array.each(records,function(record){
-                        var record_data = record.getData();
-                        record_data.leaf = true;
-                        
-                        // set value for calculating field
-                        record_data.__rollup = record.get(me.calculate_defect_field_name);
-                        me.logger.log("DEFECT ", me.calculate_defect_field_name, record);
-                        if ( me._isAccepted(record_data) && me._isClosed(record_data )) {
-                            record_data.__accepted_rollup = record.get(me.calculate_defect_field_name);
+                        }, {
+                            xtype: 'rallyportfolioitemtypecombobox',
+                            itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                            fieldLabel: 'Select',
+                            labelAlign: 'left',
+                            id: 'portfolio-combobox',
+                            margin: '5 5 5 5',
+                            listeners: {
+                                select: function () {
+                                    console.log('@ Launch Added Portfolio Combobox');
+                                    me._kickoff('user');
+                                },
+                                scope: me
+                            }
+                        }, {
+                            xtype: 'rallysearchcombobox',
+                            storeConfig: {
+                                model: 'PortfolioItem'
+                            },
+                            itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
+                            fieldLabel: 'Search',
+                            labelAlign: 'right',
+                            id: 'search-combobox',
+                            width: 300,
+                            margin: '5 5 5 5',
+                            listeners: {
+                                specialkey: function (field, e) {
+                                    // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
+                                    // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
+                                    if (e.getKey() === e.ENTER) {
+                                        me._kickoff('search');
+                                    }
+                                },
+                                select: function (aa, bb, cc) {
+                                    console.log('@ Launch  XXXXXXXXXXXXXXXX Added Search Combobox sending [', aa, ' ', bb, ' ', cc, ']');
+                                    me._kickoff('search');
+                                },
+                                scope: me
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Print Results',
+                            margin: '5 5 5 20',
+                            handler: this._getPrint,
+                            listeners: {
+                                add: function () {
+                                    console.log('@ Launch Added Print Button');
+                                },
+                                scope: me
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Support',
+                            margin: '5 5 5 20',
+                            listeners: {
+                                afterrender: function (v) {
+                                    v.el.on('click', function () {
+                                        var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                        console.log('@ Launch Added Support Button');
+                                    });
+                                },
+                                scope: me
+                            }
                         }
-                        child_hashes.push(record_data);
-                    });
-                    if ( !node_hash.children ) {
-                        node_hash.children = [];
-                    }
-                    node_hash.children = Ext.Array.push(node_hash.children,child_hashes);
-                    
-                    node_hash.__rollup = this._calculateRollup(node_hash,child_hashes,'__rollup');
-                    node_hash.__accepted_rollup = this._calculateRollup(node_hash,child_hashes,'__accepted_rollup');
-                    deferred.resolve();
+                    ],
+                },
+                {
+                    xtype: 'box',
+                    id: 'myTarget',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    width: '100%',
+                    style: {
+                        borderTop: '1'
+                    },
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myContent',
+                        html: '',
+                    },
+                    listeners: {
+                        add: function () {
+                            console.log('@ Launch Added Content Box');
+                        },
+                        scope: me
+                    },
+                    flex: 1
                 }
-            }
+            ]
         });
-        return deferred.promise;
+        this.add(layout);
     },
-    _isClosed: function(record_data) {
-        var closed = false; 
-        if ( record_data.AcceptedDate !== null && record_data.State === "Closed" ) {
-            closed = true;
+    _kickoff: function (type) {
+        this._loadData(type);
+        //console.log('@ _kickoff going to _loadData');
+    },
+    _getFilters: function (type) {
+        var theFilter, selectedItem;
+        if (type === 'search') {
+            selectedItem = Ext.getCmp('search-combobox').getRecord().get('Name');
+            theFilter = Ext.create('Rally.data.wsapi.Filter', {
+                property: 'Name',
+                operation: '=',
+                value: selectedItem,
+            });
+            console.log('SEARCH');
         }
-        return closed;
-    },
-    _isAccepted: function(record_data) {
-        var accepted = false; 
-        if ( record_data.AcceptedDate !== null ) {
-            accepted = true;
-        }
-        return accepted;
-    },
-    _calculateRollup: function(node_hash,child_hashes,field_name) {
-        var me = this;
-        this._mask("Calculating Rollup...");
-        // roll up the data
-        var total_rollup = 0;
-        /*
-         * when a story has only defects, it might be that we want to add its 
-         * value to the defects' values
-         * but when the defect has children and defects, we want only the children+defects
-         */
-        var original_value = node_hash[field_name] || 0;
-        var has_child_stories = false;
-        this.logger.log("calculating rollup for ", node_hash.FormattedID, node_hash);
-        Ext.Array.each(child_hashes,function(child){
-            var rollup_value = child[field_name] || 0;
-            me.logger.log(" ----- ", rollup_value);
-            total_rollup += rollup_value;
-            if ( child._type === "hierarchicalrequirement" ) {
-                has_child_stories = true;
-            }
-        });
-        
-        if ( !has_child_stories ) {
-            total_rollup += original_value;
-        }
-        
-        return total_rollup;
-    },
-    _getColumns: function() {
-        var me = this;
-        
-        var name_renderer = function(value,meta_data,record) {
-            return me._nameRenderer(value,meta_data,record);
-        }
-        
-        var columns = [
-            {
-                xtype: 'treecolumn',
-                text: ' ',
-                dataIndex: 'FormattedID',
-                itemId: 'tree_column',
-                renderer: name_renderer,
-                width: this.getSetting('tree_column') || 200
-            },
-            {
-                dataIndex: '__original_value',
-                text: TSGlobals.original_pert_header,
-                itemId:'original_pert_column',
-                width: this.getSetting('original_pert_column') || 100,
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__progress_by_original',
-                text: TSGlobals.progress_by_original_header,
-                itemId: 'progress_by_original_column',
-                width: this.getSetting('progress_by_original_column') || 100,
-                renderer: function(value,meta_data,record) {
-                    if ( record.get('__is_top_pi') ) {
-                        return Ext.create('Rally.technicalservices.ProgressBarTemplate',{
-                            numeratorField: '__accepted_rollup',
-                            denominatorField: '__original_value',
-                            percentDoneName: '__original_value'
-                        }).apply(record.getData());
-                    } else {
-                        return "";
-                    }
-                    
-                },
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__progress_by_rollup',
-                text: TSGlobals.progress_by_rollup_header,
-                itemId: 'progress_rollup_column',
-                width: this.getSetting('progress_rollup_column') || 100,
-                renderer: function(value,meta_data,record) {
-                    return Ext.create('Rally.technicalservices.ProgressBarTemplate',{
-                        numeratorField: '__accepted_rollup',
-                        denominatorField: '__rollup',
-                        percentDoneName: '__rollup'
-                    }).apply(record.getData());
-                    
-                },
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__rollup',
-                text: TSGlobals.total_rollup_header,
-                itemId:'total_rollup_column',
-                width: this.getSetting('total_rollup_column') || 100,
-                renderer: Ext.util.Format.numberRenderer('0.00'),
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__accepted_rollup',
-                text: TSGlobals.pert_completed_header,
-                itemId:'pert_completed_column',
-                width: this.getSetting('pert_completed_column') || 100,
-                renderer: Ext.util.Format.numberRenderer('0.00'),
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__calculated_remaining',
-                text: TSGlobals.pert_remaining_header,
-                itemId:'pert_remaining_column',
-                width: this.getSetting('pert_remaining_column') || 100,
-                renderer: function(value,meta_data,record){
-                    return Ext.util.Format.number(value, '0.00');
-                },
-                menuDisabled: true
-            },
-            {
-                dataIndex: '__calculated_delta',
-                text: TSGlobals.delta_header,
-                itemId:'delta_column',
-                width: this.getSetting('delta_column') || 100,
-                renderer: function(value,meta_data,record){
-                    return Ext.util.Format.number(value, '0.00');
-                },
-                menuDisabled: true
-            }];
-        
-        var additional_fields = this.getSetting('additional_fields_for_pis');
-        if ( typeof(additional_fields) == "string" ) {
-            additional_fields = additional_fields.split(',');
-        }
-        Ext.Array.each( additional_fields, function(additional_field){
-            var column_header = additional_field;
-            var column_index = additional_field;
-            
-            if ( typeof(additional_field) == 'object' ) {
-                column_header = additional_field.get('displayName');
-                column_index = additional_field.get('name');
-            } 
-            var additional_column = {
-                dataIndex: column_index,
-                text: column_header,
-                itemId:column_index + '_column',
-                width: me.getSetting(column_index + '_column') || 100,
-                menuDisabled: true
-            };
-            columns.push(additional_column);
-        });
-        me.logger.log("Making Columns ", columns);
-        return columns;
-    },
-    _addTreeGrid: function(tree_store) {
-        this.logger.log("creating TreeGrid");
-        var me = this;
-        this._unmask();
-        
-        var pi_tree = this.down('#display_box').add({
-            xtype:'treepanel',
-            store: tree_store,
-            cls: 'rally-grid',
-            rootVisible: false,
-            enableColumnMove: false,
-            listeners: {
-                scope: this,
-                columnresize: this._saveColumnSizes
-            },
-            columns: this._getColumns()
-        });
-    },
-    _saveColumnSizes: function(header_container,column,width){
-        this.logger.log("change column size", header_container,column.itemId, width);
-        var settings = {};
-        settings[column.itemId] = width;
-        
-        this.updateSettingsValues({
-            settings: settings
-        });
-    },
-    _nameRenderer: function(value,meta_data,record) {
-        var me = this;
-        return value + ": " + record.get('Name');
-    },
-    _getChildModelForItem: function(node_hash,pi_paths){
-        var parent_model = Ext.util.Format.lowercase(node_hash._type);
-        var child_type = "PortfolioItem";
-        
-        if ( Ext.Array.indexOf(pi_paths,parent_model) == pi_paths.length - 1 ) {
-            child_type = 'HierarchicalRequirement';
-        } else if (Ext.Array.indexOf(pi_paths,parent_model) == - 1)  {
-            child_type = 'HierarchicalRequirement';
-        }
-        
-        return child_type;
-    },
-    _getChildFilterForItem: function(node_hash,pi_paths){
-        var parent_model = Ext.util.Format.lowercase(node_hash._type);
-        var child_filter = { property:'Parent.ObjectID', value: node_hash.ObjectID };
-        
-        if ( Ext.Array.indexOf(pi_paths,parent_model) == pi_paths.length - 1 ) {
-            child_filter = { property:'PortfolioItem.ObjectID', value: node_hash.ObjectID };
-        }
-        
-        return child_filter;
-    },
-    _getDefectFilterForItem: function(node_hash){
-        var child_filter = { property:'Requirement.ObjectID', value: node_hash.ObjectID };
-        
-        return child_filter;
-    },
-    getSettingsFields: function() {
-        var _chooseOnlyNumberFields = function(field){
-            var should_show_field = true;
-            var forbidden_fields = ['FormattedID','ObjectID'];
-            if ( field.hidden ) {
-                should_show_field = false;
-            }
-            if ( field.attributeDefinition ) {
-                var type = field.attributeDefinition.AttributeType;
-                if ( type != "QUANTITY" && type != "INTEGER" && type != "DECIMAL"  ) {
-                    should_show_field = false;
-                }
-                if ( Ext.Array.indexOf(forbidden_fields,field.name) > -1 ) {
-                    should_show_field = false;
-                }
+        if (type === 'user') {
+            if (this.down('rallyusersearchcombobox').getValue() === null) {
+                folioType = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: folioType.getValue(),
+                });
+                theFilter = folioFilter;
+                console.log('no user');
             } else {
-                should_show_field = false;
+                var folioType = this.down('rallyportfolioitemtypecombobox');
+                var folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: folioType.getValue(),
+                });
+                var userItem = this.down('rallyusersearchcombobox');
+                var userFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'owner',
+                    value: userItem.getValue(),
+                });
+                theFilter = folioFilter.and(userFilter);
             }
-            return should_show_field;
-        };
-        
-        var _ignoreTextFields = function(field){
-            var should_show_field = true;
-            var forbidden_fields = ['FormattedID','ObjectID','DragAndDropRank','Name'];
-            if ( field.hidden ) {
-                should_show_field = false;
-            }
-            if ( field.attributeDefinition ) {
-                var type = field.attributeDefinition.AttributeType;
-                if ( type == "TEXT" || type == "OBJECT" || type == "COLLECTION" ) {
-                    should_show_field = false;
-                }
-                if ( Ext.Array.indexOf(forbidden_fields,field.name) > -1 ) {
-                    should_show_field = false;
-                }
-            } else {
-                should_show_field = false;
-            }
-            return should_show_field;
-        };
-        return [
-            {
-                name: 'calculate_original_field_name',
-                xtype: 'rallyfieldcombobox',
+        }
+        //console.log('@ _getFilters Switch [', type, '] returning [', theFilter, ' ', theFilter.operation, ' ', theFilter.value, '] to _loadData');
+        return theFilter;
+    },
+    _loadData: function (type) {
+        //console.log('@ _loadData working the store magic..');
+        this._mask("Going deep, searching...");
+        var me = this;
+        var myFilter = this._getFilters(type);
+        //console.log('@ _loadData Exposed Filter [', myFilter, ']');
+        if (me.theStore) {
+            me.theStore.setFilter(myFilter);
+            me.theStore.load();
+            //console.log('@ _loadData We have been here already, using load() to fetch new data');
+        } else {
+            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
-                fieldLabel: 'Original PERT Field',
-                _isNotHidden: _chooseOnlyNumberFields,
-                width: 300,
-                labelWidth: 150,
-                readyEvent: 'ready' //event fired to signify readiness
-            },
-            {
-                name: 'calculate_story_field_name',
-                xtype: 'rallyfieldcombobox',
-                model: 'HierarchicalRequirement',
-                fieldLabel: 'Story PERT Field',
-                width: 300,
-                labelWidth: 150,
-                _isNotHidden: _chooseOnlyNumberFields,
-                readyEvent: 'ready' //event fired to signify readiness
-            },
-            {
-                name: 'calculate_defect_field_name',
-                xtype: 'rallyfieldcombobox',
-                model: 'Defect',
-                fieldLabel: 'Defect PERT Field',
-                width: 300,
-                labelWidth: 150,
-                _isNotHidden: _chooseOnlyNumberFields,
-                readyEvent: 'ready' //event fired to signify readiness
-            },
-            {
-                name: 'include_defects',
-                xtype: 'rallycheckboxfield',
-                fieldLabel: 'Show Defects',
-                width: 300,
-                labelWidth: 150,
-                value: true,
-                readEvent: 'ready'
-            },
-            {
-                name: 'additional_fields_for_pis',
-                xtype: 'rallyfieldpicker',
-                modelTypes: ['PortfolioItem'],
-                fieldLabel: 'Additional fields for Portfolio Items:',
-                _shouldShowField: _ignoreTextFields,
-                width: 300,
-                alwaysExpanded: false,
-                autoExpand: true,
-                labelWidth: 150,
+                autoLoad: true, // <----- Don't forget to set this to true! heh
+                filters: myFilter,
+                limit: Infinity,
+                type: 'PortfolioItem',
                 listeners: {
-                    ready: function(picker){ picker.collapse(); }
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                        //   console.log('@ _loadData load() fired going to _createResults ', myData);
+
+                    },
+                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
-                readyEvent: 'ready' //event fired to signify readiness
-            }
-        ];
-    },
-    // ONLY FOR RUNNING EXTERNALLY
-    _showExternalSettingsDialog: function(fields){
-        var me = this;
-        if ( this.settings_dialog ) { this.settings_dialog.destroy(); }
-        this.settings_dialog = Ext.create('Rally.ui.dialog.Dialog', {
-             autoShow: false,
-             draggable: true,
-             width: 400,
-             title: 'Settings',
-             buttons: [{ 
-                text: 'OK',
-                handler: function(cmp){
-                    var settings = {};
-                    Ext.Array.each(fields,function(field){
-                        settings[field.name] = cmp.up('rallydialog').down('[name="' + field.name + '"]').getValue();
-                    });
-                    me.settings = settings;
-                    cmp.up('rallydialog').destroy();
-                    me._getData();
-                }
-            }],
-             items: [
-                {xtype:'container',html: "&nbsp;", padding: 5, margin: 5},
-                {xtype:'container',itemId:'field_box', padding: 5, margin: 5}]
-         });
-         Ext.Array.each(fields,function(field){
-            me.settings_dialog.down('#field_box').add(field);
-         });
-         this.settings_dialog.show();
-    },
-    /*
-     * Override so that the settings box fits (shows the buttons)
-     */
-//    showSettings: function(options) {        
-//        this._appSettings = Ext.create('Rally.app.AppSettings', Ext.apply({
-//            fields: this.getSettingsFields(),
-//            settings: this.getSettings(),
-//            defaultSettings: this.getDefaultSettings(),
-//            context: this.getContext(),
-//            settingsScope: this.settingsScope,
-//            autoScroll: true
-//        }, options));
-//        
-//        this._appSettings.on('cancel', this._hideSettings, this);
-//        this._appSettings.on('save', this._onSettingsSaved, this);
-//
-//        this.hide();
-//        this.up().add(this._appSettings);
-//
-//        return this._appSettings;
-//    },
-    showSettings: function(options) {      
-        this._appSettings = Ext.create('Rally.app.AppSettings', Ext.apply({
-            fields: this.getSettingsFields(),
-            settings: this.getSettings(),
-            defaultSettings: this.getDefaultSettings(),
-            context: this.getContext(),
-            settingsScope: this.settingsScope,
-            autoScroll: true,
-            scope:this
-        }, options));
-        
-        this._appSettings.on('cancel', this._hideSettings, this);
-        this._appSettings.on('save', this._onSettingsSaved, this);
-        this._appSettings.on('afterlayout', this.resizeIframe, this);
-    
-        this.hide();
-        this.up().add(this._appSettings);
-        
-        return this._appSettings;
-    },
-    resizeIframe: function() {
-        var iframeContentHeight = 400;    
-        var container = window.frameElement.parentElement;
-        if (container != parent.document.body) {
-            container.style.height = iframeContentHeight + 'px';
+                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
+            });
+            //console.log('@ _loadData New store request');
+
         }
-        window.frameElement.style.height = iframeContentHeight + 'px';
-        return;
-    }
+    },
+    _createResults: function (myData) {
+        //console.log('@ _createResults Building HTML based on [myData] passed by the store');
+        MySharedData.supportArray = myData;
+        var html = '<div id="cards">';
+        for (var x = 0; x < myData.length; x++) {
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);
+        }
+        html += '</div>';
+        Ext.fly('myTarget').update(html);
+        this._unmask();
+        MySharedData.printHtml = html;
+    },
+    _getPrint: function () {
+        //console.log('@ _getPrint Print requested');
+        var printHtml = null;
+        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        return printHtml;
+    },
+    _mask: function (message) {
+        //console.log('@ _mask We are loading the store, show the spinner');
+        //this.logger.log("Mask: ", message);
+        if (this.sparkler) {
+            this.sparkler.destroy();
+        }
+        this.sparkler = new Ext.LoadMask(this, {
+            msg: message
+        });
+        this.sparkler.show();
+        //Ext.fly('myTarget').update(this.sparkler.show());
+    },
+    _unmask: function () {
+        //console.log('@ _unmask We have the data so destroy the spinner');
+        if (this.sparkler) {
+            this.sparkler.hide();
+        }
+    },
 });
