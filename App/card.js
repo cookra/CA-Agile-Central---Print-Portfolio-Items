@@ -213,7 +213,6 @@ Ext.define('App.Card', {
     },
     _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
         var content,output;
-            console.log('triggered');
         if (div_Heading === '' || div_Content === '') {
             // Must be an empty div
             content = '&nbsp;';

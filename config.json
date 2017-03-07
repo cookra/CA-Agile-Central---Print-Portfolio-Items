@@ -6,6 +6,7 @@
     "javascript": [
         "App.js",
         "App/Runtime.js",
+        "App/Loader.js",
         "App/Card.js",
         "App/Info.js",
         "App/Tools.js",
@@ -13,6 +14,7 @@
         "App/Emailer.js"
     ],
     "css": [
-        "app.css"
+        "app.css",
+        "loader.css"
     ]
 }

@@ -27,5 +27,6 @@
     text-transform: capitalize;
 }
 #panel_Filter_Multi-body, #panel_Filter_Single-body, #panel_Filter_Actions-body{
-    border: 1px dashed #00AEEF !important;
+    border: 1px solid #bbb !important;
+    padding: 10px               !important;
 }

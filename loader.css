@@ -1,0 +1,19 @@
+/* Bar */
+
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}
+.loader {
+  width: 100%;
+  height: 20px;
+  border: 1px solid #00AEEF;
+  border-radius: 3px;
+
+  background-size: 28px 28px;
+  animation: move .5s linear infinite;
+}
