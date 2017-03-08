@@ -1,12 +1,8 @@
 Ext.define('App.Card', {
     theMarkup: null,
-    debugShow: false,
     _build: function (cardNum, totalCards, data) {
-        this._showDebug('===== @Card Happy Birthday!');
-        this._showDebug('@Card Class Saying Hi! - I build the output HTML for displaying and printing');
-        this._showDebug('=====');
-        var myRelease, myQRWP, myOBN, myColour, myNode, myParentID, myParentIDName, myEstimate, myName, myOwner, myId;
-
+        var myRelease, myQRWP, myOBN, myColour, myNode, myParentIDName, myEstimate, myName, myOwner, myId;
+        var f1,f2,f3,f4,f5,theMarkup;
 
         // @Scenario 1: Strategic Objective ######################################################################
         // No OBN
@@ -25,18 +21,13 @@ Ext.define('App.Card', {
         // No OBN
         // @Scenario 4: Feature
         // No OBN
-
-
-
         //========================================================================================================================================================================
         //
         // OBN
         //
         if (data.raw.c_OrderBookNumberOBN) {
-            this._showDebug('@Card Filter [ OBN ] > (found) sending to _shortenString ', data.raw.c_OrderBookNumberOBN);
-            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50, data.raw._type, 'OBN');
+            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50);
         } else {
-            this._showDebug('@Card Filter [ OBN ] > (not found) checking if needed with this item _checkMissing ');
             myOBN = this._checkMissing(data.raw._type, 'OBN');
         }
         //========================================================================================================================================================================
@@ -44,22 +35,17 @@ Ext.define('App.Card', {
         // COLOUR
         //
         if (data.raw.DisplayColor) {
-            this._showDebug('@Card Filter [ Colour ] > (found) ', data.raw.DisplayColor);
             myColour = data.raw.DisplayColor;
         } else {
-            this._showDebug('@Card Filter [ Colour ] > (not found) NOT POSSIBLE!!! Colour set to #ff6600');
-            this._showDebug('=====');
-            myColour = "#ff6600";
+            myColour = "#000000";
         }
         //========================================================================================================================================================================
         //
         // PROJECT
         //
         if (data.raw.Project) {
-            this._showDebug('@Card Filter [ Project ] > (found) sending to _shortenString ', data.raw.Project.Name);
-            myNode = this._shortenString(data.raw.Project.Name, 30, data.raw._type, 'Project');
+            myNode = this._shortenString(data.raw.Project.Name, 30);
         } else {
-            this._showDebug('@Card Filter [ Project ] > (not found) NOT POSSIBLE!!! No Node Assigned');
             myNode = "No Node Assigned";
         }
         //========================================================================================================================================================================
@@ -67,32 +53,26 @@ Ext.define('App.Card', {
         // RELEASE
         //
         if (data.raw.Release === undefined || !data.raw.Release) {
-            this._showDebug('@Card Filter [ Release ] > (not found) cheking if needed with this item _checkMissing');
             myRelease = this._checkMissing(data.raw._type, 'Release');
         } else {
-            this._showDebug('@Card Filter [ Release ] > (found) sending to _shortenString ', data.raw.Release);
-            myRelease = this._shortenString(data.raw.Release.Name, 25, data.raw._type, 'Release');
+            myRelease = this._shortenString(data.raw.Release.Name, 25);
         }
         //========================================================================================================================================================================
         //
         // QRWP
         //
         if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
-            this._showDebug('@Card Filter [ QRWP ] > (not found) cheking if needed with this item _checkMissing');
             myQRWP = this._checkMissing(data.raw._type, 'QRWP');
         } else {
-            this._showDebug('@Card Filter [ QRWP ] > (found) sending to _shortenString ', data.raw.c_QRWP);
-            myQRWP = this._shortenString(data.raw.c_QRWP, 26, data.raw._type, 'QRWP');
+            myQRWP = this._shortenString(data.raw.c_QRWP, 26);
         }
         //========================================================================================================================================================================
         //
         // PARENT
         //
         if (data.raw.Parent) {
-            this._showDebug('@Card Filter [ Parent ] > (found) sending to _shortenString ', data.raw.Parent.FormattedID, ' ', data.raw.Parent.Name);
-            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75, data.raw._type, 'Parent');
+            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75);
         } else {
-            this._showDebug('@Card Filter [ Parent ] > (not found) sending to _checkMissing');
             myParentIDName = this._checkMissing(data.raw._type, 'Parent');
         }
         //========================================================================================================================================================================
@@ -100,17 +80,12 @@ Ext.define('App.Card', {
         // ESTIMATE
         //
         if (data.raw.PreliminaryEstimate) {
-            this._showDebug('@Card Filter [ Estimate ] > (found) A sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PreliminaryEstimate.Name;
         } else if (data.raw.PlanEstimate) {
-            this._showDebug('@Card Filter [ Estimate ] > (found) B sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.PlanEstimate;
         } else if (data.raw.Estimate) {
-            this._showDebug('@Card Filter [ Estimate ] > (found) C sending to _shortenString ', data.raw.PreliminaryEstimate.Name);
             myEstimate = data.raw.Estimate;
         } else {
-            this._showDebug('@Card Filter [ Estimate ] > (Not Found) Not Sized');
-            this._showDebug('=====');
             myEstimate = "Not Sized";
         }
         //========================================================================================================================================================================
@@ -118,10 +93,8 @@ Ext.define('App.Card', {
         // NAME
         //
         if (data.raw._refObjectName) {
-            this._showDebug('@Card Filter [ Name ] > (found) sending to _shortenString ', data.raw._refObjectName);
-            myName = this._shortenString(data.raw._refObjectName, 84, data.raw._type, 'Name');
+            myName = this._shortenString(data.raw._refObjectName, 84);
         } else {
-            this._showDebug('@Card Filter [ Name ] > (Not Found) NOT POSSIBLE!!! No Name');
             myName = 'No Name';
 
         }
@@ -130,10 +103,8 @@ Ext.define('App.Card', {
         // OWNER
         //
         if (data.raw.Owner) {
-            this._showDebug('@Card Filter [ Owner ] > (found) sending to _shortenString ', data.raw.Owner._refObjectName);
-            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50, data.raw._type, 'Owner');
+            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50);
         } else {
-            this._showDebug('@Card Filter [ Owner ] > (Not Found) No Owner');
             myOwner = 'No Owner';
 
         }
@@ -163,12 +134,7 @@ Ext.define('App.Card', {
         var css_Start = ' style="';
         var css_End = '"';
         var colour_Background_Darken = Ext.create('App.Tools')._shadeBlendConvert(data.raw.DisplayColor, -60);
-
         var colour_Background = 'background: repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
-        // Headings
-        //var css_Heading_Style_Start = css_Header_Span_Start + css_Heading_Color + css_Header_Span_End;
-
-
         var css_Cut_Outs = css_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left;page-break-inside: avoid' + css_End;
         var css_Card_Con = css_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;'+ css_End;
         // Main CSS Content
@@ -184,10 +150,63 @@ Ext.define('App.Card', {
         var css_Row_Colo = css_Div_Height_Colo + css_Border____Blank + colour_Background;
         var cssClearBoth = css_Start + 'clear:both' + css_End;
 
-
-
-
-        var theMarkup =
+        f1 = MySharedData.portfolioType[0];
+        f2 = MySharedData.portfolioType[1];
+        f3 = MySharedData.portfolioType[2];
+        f4 = MySharedData.portfolioType[3];
+        f5 = MySharedData.portfolioType[4];
+        
+        var portfolioType = data.raw._type;
+        // Strategic Objective
+        if (portfolioType === f1) {
+         theMarkup =
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+            '</div>' +
+            '</div>';
+        }
+        // Portfolio Objective
+        if (portfolioType === f2) {
+         theMarkup =
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+            '</div>' +
+            '</div>';
+        }
+        //Portfolio Epic
+        if (portfolioType === f3) {
+         theMarkup =
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+            '</div>' +
+            '</div>';
+        }
+        // Business Outcome
+        if (portfolioType === f4) {
+         theMarkup =
             '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
             '<div class="css_Card_Con" ' + css_Card_Con + '>' +
             this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
@@ -196,19 +215,34 @@ Ext.define('App.Card', {
             this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
             this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
             this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
-            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
             this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
             this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
             this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
             '</div>' +
             '</div>';
+        }
+        // Feature
+        if (portfolioType === f5) {
+         theMarkup =
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+            '</div>' +
+            '</div>';
+        }
         // Printing Layout Shaper 2 x 2 cards
         if (Math.ceil((cardNum + 1) % 4) === 0) {
             theMarkup = theMarkup + '<div class=pb></div>';
         } else if (cardNum === totalCards - 1) {
             theMarkup = theMarkup + '<div class=cb ' + cssClearBoth + '>&nbsp;</div>';
         }
-        this._showDebug('===== @Card Ending !!!');
         return theMarkup;
     },
     _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
@@ -235,24 +269,16 @@ Ext.define('App.Card', {
         doc.write('</body></html>');
         doc.close();
         printWindow.print();
-        this._showDebug('@Card _Print Fired');
         return false;
     },
     // Fits our text into the diaplay panel take the string and the length you want to cut by then adds ... if the string breaches the limit
-    _shortenString: function (string, stringLength, type, name) {
-        //this._showDebug('_shortenString:', string, stringLength);
-        var output, result;
+    _shortenString: function (string, stringLength) {
+        var output;
         if (string.length > stringLength) {
             output = string.substring(stringLength, length) + ' ...';
-            result = string + '***** [ Trimmed ] *****';
         } else {
             output = string;
         }
-        if (string.length <= stringLength) {
-            result = '***** [ No Change ] *****';
-        }
-        //this._showDebug('@Card Filter [', name, '] @ _shortenString', string, ' MaxChar: ', stringLength, ' Result: ', result);
-        this._showDebug('=====');
         return output;
     },
     _checkMissing: function (portfolioType, item) {
@@ -337,13 +363,6 @@ Ext.define('App.Card', {
                 output = 'Missing';
             }
         }
-        //this._showDebug('@Card Filter [', item, '] < @ _checkMissing Type: ', portfolioType, ' Filter Output: ', output);
-        this._showDebug('=====');
         return output;
-    },
-    _showDebug: function (msg) {
-        if (this.debugShow === true) {
-            console.log(msg);
-        }
     }
 });

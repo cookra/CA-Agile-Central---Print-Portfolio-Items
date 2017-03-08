@@ -1,14 +1,8 @@
 Ext.define('App.Emailer', {
-    singleton: true,
-    constructor: function () {
-        console.log('Config added: c Email');
-    },
     _emailer: function (coreData, xData1, xData2, xData3, xData4) {
-        console.log('@ _emailer');
         var gProp = App.Runtime;
         var PcontactSubject = 'REF: AC APP ';
         var PcontactMessage = '=========== Please leave your message above this line ==========';
-        var PcontactEmail = 'richard.cook@barclaycard.co.uk';
         // User Vars
         var yourapp = '> Browser Web App Name > ' + navigator.appName;
         var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
@@ -60,8 +54,6 @@ Ext.define('App.Emailer', {
         report += '> AC User Loc > ' + xData1._ref+ charReturn;
         report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
         report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
-        //report += '> AC User Default Node > ' + xData1.UserProfile.DefaultProject.Name+ charReturn;
-        //report += '> AC User Default Workapace > ' + xData1.UserProfile.DefaultWorkspace.Name+ charReturn;
         report += '> AC Application Node > ' + xData2.Name+ charReturn;
         report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
         report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
@@ -89,7 +81,6 @@ Ext.define('App.Emailer', {
             report += userData[x] + charReturn;
         }
         report = encodeURIComponent(report);      
-         console.log('@ _emailer Launch Email App');
-        return window.location = 'mailto:' + PcontactEmail + '?subject=' + subject + '&body=' + message + report;
+        return window.location = 'mailto:' + gProp.PsupportEmail + '?subject=' + subject + '&body=' + message + report;
     },
 });

@@ -33,7 +33,7 @@ Ext.define('PrintApp', {
         'c_OrderBookNumberOBN'
     ],
     launch: function () {
-        console.log('\033[2J');
+        //console.log('\033[2J');
         var me = this;
         var xData1 = this.getContext().getUser();
         var xData2 = this.getContext().getProject();
@@ -57,7 +57,7 @@ Ext.define('PrintApp', {
                     itemId: 'header',
                     listeners: {
                         add: function () {
-                            console.log('@ Launch Added Panel');
+                            //console.log('@ Launch Added Panel');
                         },
                         scope: me
                     },
@@ -80,7 +80,7 @@ Ext.define('PrintApp', {
                             defaultSelectionPosition: 'first',
                             listeners: {
                                 select: function () {
-                                    console.log('@ Launch User Selected [ User ]');
+                                    //console.log('@ Launch User Selected [ User ]');
                                     me._kickoff('usUserer');
                                 },
                                 scope: me
@@ -94,7 +94,7 @@ Ext.define('PrintApp', {
                             margin: '5 5 5 5',
                             listeners: {
                                 select: function () {
-                                    console.log('@ Launch User Selected [ Item ]');
+                                    //console.log('@ Launch User Selected [ Item ]');
                                     me._kickoff('User');
                                 },
                                 scope: me
@@ -113,12 +113,12 @@ Ext.define('PrintApp', {
                             listeners: {
                                 specialkey: function (field, e) {
                                     if (e.getKey() === e.ENTER) {
-                                        console.log('@ Launch User Pressed [ Enter ]');
+                                        //console.log('@ Launch User Pressed [ Enter ]');
                                         me._kickoff('Search');
                                     }
                                 },
                                 select: function () {
-                                    console.log('@ Launch User Selected [ Search Value ]');
+                                    //console.log('@ Launch User Selected [ Search Value ]');
                                     me._kickoff('Search');
                                 },
                                 scope: me
@@ -131,7 +131,7 @@ Ext.define('PrintApp', {
                             handler: this._getPrint,
                             listeners: {
                                 add: function () {
-                                    console.log('@ Launch Added Print Button');
+                                    //console.log('@ Launch Added Print Button');
                                 },
                                 scope: me
                             }
@@ -144,7 +144,7 @@ Ext.define('PrintApp', {
                                 afterrender: function (v) {
                                     v.el.on('click', function () {
                                         var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                        console.log('@ Launch Added Support Button');
+                                        //console.log('@ Launch Added Support Button');
                                     });
                                 },
                                 scope: me
@@ -168,7 +168,7 @@ Ext.define('PrintApp', {
                     },
                     listeners: {
                         add: function () {
-                            console.log('@ Launch Added Content Box');
+                            //console.log('@ Launch Added Content Box');
                         },
                         scope: me
                     },
@@ -180,7 +180,7 @@ Ext.define('PrintApp', {
     },
     _kickoff: function (type) {
         this._loadData(type);
-        console.log('@ _kickoff going to _loadData');
+        //console.log('@ _kickoff going to _loadData');
     },
     _getFilters: function (t) {
         var theFilter, p, pp, folioFilter, userFilter;
@@ -191,7 +191,7 @@ Ext.define('PrintApp', {
                 operation: '=',
                 value: p.getValue(),
             });
-            console.log(theFilter);
+            //console.log(theFilter);
         }
         if (t === 'User') {
             if (this.down('rallyusersearchcombobox').getValue() === null) {
@@ -217,21 +217,21 @@ Ext.define('PrintApp', {
                 theFilter = folioFilter.and(userFilter);
             }
         }
-        console.log('@ _getFilters Search [', t, ']');
+        //console.log('@ _getFilters Search [', t, ']');
         p = undefined;
         pp = undefined;
         return theFilter;
     },
     _loadData: function (type) {
-        //console.log('@ _loadData working the store magic..');
+        ////console.log('@ _loadData working the store magic..');
         this._mask("Going deep, searching...");
         var me = this;
         var myFilter = this._getFilters(type);
-        //console.log('@ _loadData Exposed Filter [', myFilter, ']');
+        ////console.log('@ _loadData Exposed Filter [', myFilter, ']');
         if (me.theStore) {
             me.theStore.setFilter(myFilter);
             me.theStore.load();
-            //console.log('@ _loadData We have been here already, using load() to fetch new data');
+            ////console.log('@ _loadData We have been here already, using load() to fetch new data');
         } else {
             me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
                 model: 'PortfolioItem',
@@ -242,19 +242,19 @@ Ext.define('PrintApp', {
                 listeners: {
                     load: function (myStore, myData) {
                         me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                        //   console.log('@ _loadData load() fired going to _createResults ', myData);
+                        //   //console.log('@ _loadData load() fired going to _createResults ', myData);
 
                     },
                     scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
                 },
                 fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
             });
-            //console.log('@ _loadData New store request');
+            ////console.log('@ _loadData New store request');
 
         }
     },
     _createResults: function (myData) {
-        //console.log('@ _createResults Building HTML based on [myData] passed by the store');
+        ////console.log('@ _createResults Building HTML based on [myData] passed by the store');
         MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
@@ -266,13 +266,13 @@ Ext.define('PrintApp', {
         MySharedData.printHtml = html;
     },
     _getPrint: function () {
-        //console.log('@ _getPrint Print requested');
+        ////console.log('@ _getPrint Print requested');
         var printHtml = null;
         printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
         return printHtml;
     },
     _mask: function (message) {
-        //console.log('@ _mask We are loading the store, show the spinner');
+        ////console.log('@ _mask We are loading the store, show the spinner');
         //this.logger.log("Mask: ", message);
         if (this.sparkler) {
             this.sparkler.destroy();
@@ -284,7 +284,7 @@ Ext.define('PrintApp', {
         //Ext.fly('myTarget').update(this.sparkler.show());
     },
     _unmask: function () {
-        //console.log('@ _unmask We have the data so destroy the spinner');
+        ////console.log('@ _unmask We have the data so destroy the spinner');
         if (this.sparkler) {
             this.sparkler.hide();
         }
