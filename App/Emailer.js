@@ -1,25 +1,25 @@
 Ext.define('App.Emailer', {
     _emailer: function (coreData, xData1, xData2, xData3, xData4) {
-        var gProp = App.Runtime;
+        var gProp           = App.Runtime;
         var PcontactSubject = 'REF: AC APP ';
-        var PcontactMessage = '=========== Please leave your message above this line ==========';
+        var PcontactMessage = '   = === === === = Please leave your message above this line === === === = ';
         // User Vars
-        var yourapp = '> Browser Web App Name > ' + navigator.appName;
-        var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
-        var yourversion = '> Browser Version > ' + navigator.appVersion;
+        var yourapp         = '> Browser Web App Name > ' + navigator.appName;
+        var yourappalt      = '> Browser User Agent > ' + navigator.userAgent;
+        var yourversion     = '> Browser Version > ' + navigator.appVersion;
         var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
-        var yourplatform = '> Platform > ' + navigator.platform;
-        var youroscpu = '> OS CPU > ' + navigator.oscpu;
-        var yourcookie = '> Cookie Enabled > ' + navigator.cookieEnabled;
-        var outwinw = '> Owidth > ' + window.outerWidth;
-        var outwinh = '> Oheight > ' + window.outerHeight;
-        var inwinw = '> Iwidth > ' + window.innerWidth;
-        var inwinh = '> Iheight > ' + window.innerHeight;
-        var uri = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
-        var src = '> SRC > ' + document.getElementsByTagName('script')[0].src;
-        var localname = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
-        var type = '> Type > ' + document.getElementsByTagName('script')[0].type;
-        var userData = [
+        var yourplatform    = '> Platform > ' + navigator.platform;
+        var youroscpu       = '> OS CPU > ' + navigator.oscpu;
+        var yourcookie      = '> Cookie Enabled > ' + navigator.cookieEnabled;
+        var outwinw         = '> Owidth > ' + window.outerWidth;
+        var outwinh         = '> Oheight > ' + window.outerHeight;
+        var inwinw          = '> Iwidth > ' + window.innerWidth;
+        var inwinh          = '> Iheight > ' + window.innerHeight;
+        var uri             = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
+        var src             = '> SRC > ' + document.getElementsByTagName('script')[0].src;
+        var localname       = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
+        var type            = '> Type > ' + document.getElementsByTagName('script')[0].type;
+        var userData        = [
             yourapp,
             yourappalt,
             yourversion,

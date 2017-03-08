@@ -4,7 +4,7 @@ Ext.define('App.Card', {
     theMarkup: null,
     _build: function (cardNum, totalCards, data) {
         var myRelease, myQRWP, myOBN, myColour, myNode, myParentIDName, myEstimate, myName, myOwner, myId;
-        var f1,f2,f3,f4,f5,theMarkup;
+        var f1, f2, f3, f4, f5, theMarkup;
 
         // @Scenario 1: Strategic Objective ######################################################################
         // No OBN
@@ -73,7 +73,7 @@ Ext.define('App.Card', {
         // PARENT
         //
         if (data.raw.Parent) {
-            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75);
+            myParentIDName = this._shortenString('[' + data.raw.Parent.FormattedID + '] ' + data.raw.Parent.Name, 75);
         } else {
             myParentIDName = this._checkMissing(data.raw._type, 'Parent');
         }
@@ -110,134 +110,134 @@ Ext.define('App.Card', {
             myOwner = 'No Owner';
 
         }
-        myId = data.raw.FormattedID;
+        myId                         = data.raw.FormattedID;
         // NASTY HACK FOR ExtJS (Inline CSS builds) //
-        var font = 'font-family: verdana, Geneva, sans-serif;';
-        var css_Font______PUID = font + 'font-size:18px;';
-        var css_Font_Px_Copy_L = font + 'font-size:12px;';
-        var css_Font_Px_Copy_M = font + 'font-size:11px;';
-        var css_Padding_5 = 'padding:5px;';
-        var css_Bold = 'font-weight:bold;';
-        var css_NORM = 'font-weight:normal;';
-        var css_Text_Align_L = 'text-align:left;';
-        var css_Div_Height_PUID = 'height:33px;';
-        var css_Div_Height_Name = 'height:55px;';
-        var css_Div_Height_Prnt = 'height:55px;';
-        var css_Div_Height_Node = 'height:55px;';
-        var css_Div_Height_Rele = 'height:23px;';
-        var css_Div_Height_QRWP = 'height:23px;';
-        var css_Div_Height__OBN = 'height:23px;';
-        var css_Div_Height_Size = 'height:23px;';
-        var css_Div_Height_Owne = 'height:23px;';
-        var css_Div_Height_Colo = 'height:30px;';
-        var css_Border_Dashed_B = 'border-bottom: 1px dashed grey;';
-        var css_Border_solid__B = 'border-bottom: 1px solid black;';
-        var css_Border____Blank = 'border: none;'; //<-- Not needed but keeps the formatting clean below
-        var css_Start = ' style="';
-        var css_End = '"';
+        var font                     = 'font-family           : verdana,    Geneva, sans-serif;';
+        var css_Font______PUID       = font + 'font-size      : 18px;';
+        var css_Font_Px_Copy_L       = font + 'font-size      : 12px;';
+        var css_Font_Px_Copy_M       = font + 'font-size      : 11px;';
+        var css_Padding_5            = 'padding               : 5px;';
+        var css_Bold                 = 'font-weight           : bold;';
+        var css_NORM                 = 'font-weight           : normal;';
+        var css_Text_Align_L         = 'text-align            : left;';
+        var css_Div_Height_PUID      = 'height                : 33px;';
+        var css_Div_Height_Name      = 'height                : 55px;';
+        var css_Div_Height_Prnt      = 'height                : 55px;';
+        var css_Div_Height_Node      = 'height                : 55px;';
+        var css_Div_Height_Rele      = 'height                : 23px;';
+        var css_Div_Height_QRWP      = 'height                : 23px;';
+        var css_Div_Height__OBN      = 'height                : 23px;';
+        var css_Div_Height_Size      = 'height                : 23px;';
+        var css_Div_Height_Owne      = 'height                : 23px;';
+        var css_Div_Height_Colo      = 'height                : 30px;';
+        var css_Border_Dashed_B      = 'border-bottom         : 1px         dashed  grey;';
+        var css_Border_solid__B      = 'border-bottom         : 1px         solid   black;';
+        var css_Border____Blank      = 'border                : none;'; //<--   Not needed but keeps the formatting clean below
+        var css_Start                = '                style = "';
+        var css_End                  = '"';
         var colour_Background_Darken = Ext.create('App.Tools')._shadeBlendConvert(data.raw.DisplayColor, -60);
-        var colour_Background = 'background: repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
-        var css_Cut_Outs = css_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left;page-break-inside: avoid' + css_End;
-        var css_Card_Con = css_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;'+ css_End;
+        var colour_Background        = 'background            : repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
+        var css_Cut_Outs             = css_Start + 'border    : 1px dashed #00AEEF; padding: 10px;position     : relative;float: left;page-break-inside: avoid' + css_End;
+        var css_Card_Con             = css_Start + 'border    : 1px solid #000;width       : 250px; white-space: normal;color  : black;background-color: #fff;' + css_End;
         // Main CSS Content
-        var css_Row_PUID = css_Div_Height_PUID + css_Border_solid__B + css_Text_Align_L + css_Font______PUID + css_Bold + css_Padding_5;
-        var css_Row_Name = css_Div_Height_Name + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_L + css_NORM + css_Padding_5;
-        var css_Row_Prnt = css_Div_Height_Prnt + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_Node = css_Div_Height_Node + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_Rele = css_Div_Height_Rele + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_QRWP = css_Div_Height_QRWP + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row__OBN = css_Div_Height__OBN + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_Size = css_Div_Height_Size + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_Owne = css_Div_Height_Owne + css_Border_solid__B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
-        var css_Row_Colo = css_Div_Height_Colo + css_Border____Blank + colour_Background;
-        var cssClearBoth = css_Start + 'clear:both' + css_End;
+        var css_Row_PUID             = css_Div_Height_PUID + css_Border_solid__B + css_Text_Align_L + css_Font______PUID + css_Bold + css_Padding_5;
+        var css_Row_Name             = css_Div_Height_Name + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_L + css_NORM + css_Padding_5;
+        var css_Row_Prnt             = css_Div_Height_Prnt + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Node             = css_Div_Height_Node + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Rele             = css_Div_Height_Rele + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_QRWP             = css_Div_Height_QRWP + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row__OBN             = css_Div_Height__OBN + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Size             = css_Div_Height_Size + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Owne             = css_Div_Height_Owne + css_Border_solid__B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Colo             = css_Div_Height_Colo + css_Border____Blank + colour_Background;
+        var cssClearBoth             = css_Start + 'clear:both' + css_End;
 
         f1 = MySharedData.portfolioType[0];
         f2 = MySharedData.portfolioType[1];
         f3 = MySharedData.portfolioType[2];
         f4 = MySharedData.portfolioType[3];
         f5 = MySharedData.portfolioType[4];
-        
+
         var portfolioType = data.raw._type;
         // Strategic Objective
         if (portfolioType === f1) {
-         theMarkup =
-            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
-            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
-            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
-            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
-            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
-            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
-            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
-            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
-            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
-            '</div>' +
-            '</div>';
+            theMarkup =
+                '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+                '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+                this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+                this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+                this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+                this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+                this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+                this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+                this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+                '</div>' +
+                '</div>';
         }
         // Portfolio Objective
         if (portfolioType === f2) {
-         theMarkup =
-            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
-            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
-            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
-            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
-            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
-            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
-            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
-            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
-            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
-            '</div>' +
-            '</div>';
+            theMarkup =
+                '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+                '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+                this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+                this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+                this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+                this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+                this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+                this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+                this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+                '</div>' +
+                '</div>';
         }
         //Portfolio Epic
         if (portfolioType === f3) {
-         theMarkup =
-            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
-            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
-            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
-            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
-            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
-            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
-            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
-            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
-            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
-            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
-            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
-            '</div>' +
-            '</div>';
+            theMarkup =
+                '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+                '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+                this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+                this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+                this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+                this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+                this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+                this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
+                this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+                this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+                this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+                '</div>' +
+                '</div>';
         }
         // Business Outcome
         if (portfolioType === f4) {
-         theMarkup =
-            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
-            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
-            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
-            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
-            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
-            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
-            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
-            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
-            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
-            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
-            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
-            '</div>' +
-            '</div>';
+            theMarkup =
+                '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+                '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+                this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+                this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+                this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+                this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+                this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+                this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+                this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+                this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+                this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+                '</div>' +
+                '</div>';
         }
         // Feature
         if (portfolioType === f5) {
-         theMarkup =
-            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
-            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
-            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
-            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
-            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
-            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
-            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
-            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
-            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
-            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
-            '</div>' +
-            '</div>';
+            theMarkup =
+                '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+                '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+                this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+                this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+                this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+                this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+                this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+                this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+                this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+                this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+                '</div>' +
+                '</div>';
         }
         // Printing Layout Shaper 2 x 2 cards
         if (Math.ceil((cardNum + 1) % 4) === 0) {
@@ -248,7 +248,7 @@ Ext.define('App.Card', {
         return theMarkup;
     },
     _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
-        var content,output;
+        var content, output;
         if (div_Heading === '' || div_Content === '') {
             // Must be an empty div
             content = '&nbsp;';
@@ -256,7 +256,7 @@ Ext.define('App.Card', {
             // Normal
             content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
         }
-        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">'+content+'</div>';
+        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">' + content + '</div>';
         return output;
     },
     _print: function (data) {
