@@ -1,5 +1,4 @@
 Ext.define('App.Runtime', {
-    singleton             : true,
     config                : {
         // Versioning
         Pversion          : 'v4.2b',

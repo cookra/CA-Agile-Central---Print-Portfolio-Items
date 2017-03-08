@@ -410,7 +410,7 @@ Ext.define('PrintApp', {
         printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
         return printHtml;
     },
-    _mask: function (target) {
+    _mask: function () {
         Ext.fly('myInfoPanel').update(Ext.create('App.Loader')._build('bar'));
         //Ext.fly('myTarget').update(Ext.create('App.Loader')._build('wave'));
     },
@@ -445,10 +445,9 @@ Ext.define('PrintApp', {
     },
 });
                 Ext.define('App.Loader', {
-    _build: function (type) {
+    _build               : function (type) {
         var output;
-        var gProp        = App.Runtime;
-        var colour_Array = gProp.PrallyColours_10;
+        var colour_Array = Ext.create('App.Runtime').PrallyColours_10;
         var colour_Norm  = colour_Array[Math.floor((Math.random() * 10))];
         var Colour_Dark  = Ext.create('App.Tools')._shadeBlendConvert(colour_Norm, -30);
         switch (type) {

@@ -1,8 +1,7 @@
 Ext.define('App.Loader', {
-    _build: function (type) {
+    _build               : function (type) {
         var output;
-        var gProp        = App.Runtime;
-        var colour_Array = gProp.PrallyColours_10;
+        var colour_Array = Ext.create('App.Runtime').PrallyColours_10;
         var colour_Norm  = colour_Array[Math.floor((Math.random() * 10))];
         var Colour_Dark  = Ext.create('App.Tools')._shadeBlendConvert(colour_Norm, -30);
         switch (type) {

@@ -1,6 +1,6 @@
 Ext.define('App.Emailer', {
     _emailer: function (coreData, xData1, xData2, xData3, xData4) {
-        var gProp           = App.Runtime;
+        var gProp           = Ext.create('App.Runtime');
         var PcontactSubject = 'REF: AC APP ';
         var PcontactMessage = '   = === === === = Please leave your message above this line === === === = ';
         // User Vars

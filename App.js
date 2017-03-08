@@ -401,7 +401,7 @@ Ext.define('PrintApp', {
         printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
         return printHtml;
     },
-    _mask: function (target) {
+    _mask: function () {
         Ext.fly('myInfoPanel').update(Ext.create('App.Loader')._build('bar'));
         //Ext.fly('myTarget').update(Ext.create('App.Loader')._build('wave'));
     },

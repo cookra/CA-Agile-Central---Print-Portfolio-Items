@@ -1,6 +1,4 @@
 Ext.define('App.Info', {
-    theMarkup: null,
-    debugShow: true,
     _showDebug: function (msg){
         if(this.debugShow===true){
             //console.log(msg);
