@@ -1,4 +1,6 @@
 Ext.define('App.Card', {
+    // Created by Richard Cook ::: Cookra Limited for Barclays
+    // 
     theMarkup: null,
     _build: function (cardNum, totalCards, data) {
         var myRelease, myQRWP, myOBN, myColour, myNode, myParentIDName, myEstimate, myName, myOwner, myId;
