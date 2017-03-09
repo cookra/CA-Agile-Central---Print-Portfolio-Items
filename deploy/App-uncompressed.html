@@ -7,452 +7,50 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                Ext.define('MySharedData', {
-    singleton: true,
-    printHtml: '',
-    supportArray: [],
-    infoString: '',
-    // Needs automating!
-    portfolioType: [
-        'PortfolioItem/BUStrategicObjectives',
-        'PortfolioItem/STPortfolioObjectives',
-        'PortfolioItem/PortfolioEpic',
-        'PortfolioItem/BusinessOutcome',
-        'PortfolioItem/Feature',
-    ], // Portfolio Types
-});
-
-Ext.define('PrintApp', {
-    extend: 'Rally.app.App',
-    theStore: undefined, // app level references to the store and grid for easy access in various methods
-    printHtml: null,
-    theFetch: ['FormattedID',
-        'Name',
-        'Project',
-        'Owner',
-        'Size',
-        'DisplayColor',
-        'State',
-        'PreliminaryEstimate',
-        'Parent',
-        'Release',
-        'c_QRWP',
-        '_type',
-        'PortfolioItemType',
-        '_refObjectName',
-        'c_OrderBookNumberOBN'
-    ],
-    launch: function () {
-        console.log('\033[2J');
-        var me = this;
-        var xData1 = this.getContext().getUser();
-        var xData2 = this.getContext().getProject();
-        var xData3 = this.getContext().getWorkspace();
-        var xData4 = this.getContext().getSubscription();
-        //========================================================================================================================================================================
-        //
-        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        //
-        // CONTAINER
-        //    
-        var layout = Ext.create('Ext.container.Container', {
-            layout: 'fit',
-            align: 'stretch',
-            height: '100%',
-            layoutConfig: {
-                align: 'stretch',
-            },
-            items: [{
-                //========================================================================================================================================================================
-                //
-                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                //
-                // HEADER
-                //                
-                xtype: 'panel',
-                border: false,
-                layout: 'hbox',
-                html: '',
-                id: 'myHeader',
-                itemId: 'header',
-                width: '100%',
-                items: [{
-                    //========================================================================================================================================================================
-                    //
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //
-                    // FILTER GROUP LEFT (WORK TOGETHER)
-                    //    
-                    xtype: 'panel',
-                    layout: 'hbox',
-                    //title: 'These work together',
-                    id: 'panel_Filter_Multi',
-                    itemId: 'panel_Filter_Multi',
-                    margin: '10 5 5 0',
-                    bodyPadding: 10,
-                    cls: 'mainPageGroupPanel',
-                    items: [{
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // USER SEARCH
-                        //   
-                        xtype: 'rallyusersearchcombobox',
-                        storeConfig: {
-                            model: 'PortfolioItem'
-                        },
-                        fieldLabel: 'Team Member:',
-                        project: this.getContext().getProject(),
-                        //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
-                        itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
-                        //labelAlign: 'right',
-                        id: 'user-combobox',
-                        // multiSelect: true, // <------------explore this
-                        margin: '0 5 0 0',
-                        //emptyText: 'All Users',
-                        noEntryText: '-- All --',
-                        //noEntryValue: 'All',
-                        defaultSelectionPosition: 'first',
-                        listeners: {
-                            select: function () {
-                                this._mask('myInfoPanel');
-                                me._kickoff('User');
-                            },
-                            scope: me
-                        }
-                    }, {
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // PORTFOLIO ITEM
-                        //   
-                        xtype: 'rallyportfolioitemtypecombobox',
-                        itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
-                        fieldLabel: 'Select',
-                        labelAlign: 'left',
-                        id: 'portfolio-combobox',
-                        margin: '0 5 0 0',
-                        listeners: {
-                            select: function () {
-                                console.log('a');
-                                this._mask('myInfoPanel');
-                                me._kickoff('User');
-                            },
-                            scope: me
-                        }
-                    }, ]
-                }, {
-                    //========================================================================================================================================================================
-                    //
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //
-                    // FILTER GROUP RIGHT (STANDALONE)
-                    //   
-                    xtype: 'panel',
-                    layout: 'hbox',
-                    //title: 'Standalone',
-                    id: 'panel_Filter_Single',
-                    itemId: 'panel_Filter_Single',
-                    margin: '10 5 5 10',
-                    bodyPadding: 10,
-                    items: [{
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // SEARCH field
-                        //
-                        xtype: 'rallysearchcombobox',
-                        storeConfig: {
-                            model: 'PortfolioItem'
-                        },
-                        itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
-                        fieldLabel: 'Search',
-                        labelAlign: 'left',
-                        width: 350,
-                        id: 'search-combobox',
-                        margin: '0 5 0 0',
-                        listeners: {
-                            specialkey: function (field, e) {
-                                if (e.getKey() === e.ENTER) {
-                                    this._mask('myInfoPanel');
-                                    me._kickoff('Search');
-                                }
-                            },
-                            select: function () {
-                                this._mask('myInfoPanel');
-                                me._kickoff('Search');
-                            },
-                            scope: me
-                        }
-                    }]
-                }, {
-                    //========================================================================================================================================================================
-                    //
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    //
-                    // ACTIONS
-                    //  
-                    xtype: 'panel',
-                    layout: 'hbox',
-                    //title: 'Actions',
-                    id: 'panel_Filter_Actions',
-                    itemId: 'panel_Filter_Actions',
-                    margin: '10 5 5 10',
-                    bodyPadding: 10,
-                    items: [{
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // PRINT BUTTON
-                        //
-                        xtype: 'button',
-                        text: 'Print Results',
-                        margin: '0 5 0 5',
-                        handler: this._getPrint,
-                        style: {
-                            background: '#00AEEF'
-                        },
-                    }, {
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // FLEX 1
-                        //
-                        xtype: 'component',
-                    }, {
-                        //========================================================================================================================================================================
-                        //
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        //
-                        // SUPPORT BUTTON
-                        //
-                        xtype: 'button',
-                        text: 'Support',
-                        margin: '0 5 0 5',
-                        style: {
-                            background: 'red'
-                        },
-                        listeners: {
-                            afterrender: function (v) {
-                                v.el.on('click', function () {
-                                    Ext.create('App.Emailer')._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
-                                });
-                            },
-                            scope: me
-                        }
-                    }]
-                }],
-            }, {
-                xtype: 'container',
-                layout: 'fit',
-                align: 'stretch',
-                height: '100%',
-                layoutConfig: {
-                    align: 'stretch',
-                },
-                items: [{
-                    xtype: 'box',
-                    id: 'myInfoPanel',
-                    autoScroll: true,
-                    margin: '10 5 5 10',
-                    height: 40,
-                    width: '100%',
-
-                    autoEl: {
-                        tag: 'div',
-                        cls: 'myInfoPanel',
-                        html: '',
-
-                    },
-                    listeners: {
-                        afterrender: function () {
-                        },
-                        scope: me
-                    },
-                    flex: 1,
-                }, {
-                    xtype: 'box',
-                    id: 'myTarget',
-                    autoScroll: true,
-                    margin: '10 5 5 10',
-                    width: '100%',
-                    style: {
-                        borderTop: '1'
-                    },
-                    autoEl: {
-                        tag: 'div',
-                        cls: 'myContent',
-                        html: '',
-                    },
-                    listeners: {
-                        afterrender: function () {
-
-                        },
-                        scope: me
-                    },
-                    flex: 1
-                }]
-            }, ]
-        });
-        this.add(layout);
-    },
-    _kickoff: function (type) {
-        this._loadData(type);
-    },
-    _getFilters: function (t) {
-        var theFilter, p, pp, folioFilter, userFilter;
-        if (t === 'Search') {
-            p = Ext.getCmp('search-combobox').getRecord().get('Name');
-            theFilter = Ext.create('Rally.data.wsapi.Filter', {
-                property: 'Name',
-                operation: '=',
-                value: p,
-            });
-        }
-        if (t === 'User') {
-            if (this.down('rallyusersearchcombobox').getValue() === null) {
-                p = this.down('rallyportfolioitemtypecombobox');
-                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
-                    property: 'PortfolioItemType',
-                    operation: '=',
-                    value: p.getValue(),
-                });
-                theFilter = folioFilter;
-            } else {
-                p = this.down('rallyportfolioitemtypecombobox');
-                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
-                    property: 'PortfolioItemType',
-                    operation: '=',
-                    value: p.getValue(),
-                });
-                pp = this.down('rallyusersearchcombobox');
-                userFilter = Ext.create('Rally.data.wsapi.Filter', {
-                    property: 'owner',
-                    value: pp.getValue(),
-                });
-                theFilter = folioFilter.and(userFilter);
-            }
-        }
-        p = undefined;
-        pp = undefined;
-        return theFilter;
-    },
-    _loadData: function (type) {
-        var me = this;
-        var myFilter = this._getFilters(type);
-        if (me.theStore) {
-            me.theStore.setFilter(myFilter);
-            me.theStore.load();
-        } else {
-            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
-                model: 'PortfolioItem',
-                autoLoad: true, // <----- Don't forget to set this to true! heh
-                filters: myFilter,
-                limit: Infinity,
-                type: 'PortfolioItem',
-                listeners: {
-                    load: function (myStore, myData) {
-                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
-                    },
-                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
-                },
-                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
-            });
-
-        }
-    },
-    _createResults: function (myData) {
-        var itemType;
-        MySharedData.supportArray = myData;
-        var html = '<div id="cards">';
-        for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.Card')._build(x, myData.length, myData[x]);
-            itemType = myData[x].raw._type;
-        }
-        html += '</div>';
-        Ext.fly('myTarget').update(html);
-        this._unmask();
-        MySharedData.infoString += Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header', '<style="color:blue;">Found</style> ', x, ' Portfolio items that match your search criteria'));
-        MySharedData.printHtml = html;
-    },
-    _getPrint: function () {
-        var printHtml = null;
-        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
-        return printHtml;
-    },
-    _mask: function () {
-        Ext.fly('myInfoPanel').update(Ext.create('App.Loader')._build('bar'));
-        //Ext.fly('myTarget').update(Ext.create('App.Loader')._build('wave'));
-    },
-    _unmask: function () {
-        if (this.sparkler) {
-            this.sparkler = null;
-            //this.sparkler.destroy();
-        }
-    },
-});
-                Ext.define('App.Runtime', {
-    singleton             : true,
-    config                : {
+                Ext.define('App.Config', {
+    config: {
         // Versioning
-        Pversion          : 'v4.2b',
-        PappID            : 'AC Print Portfolio Items',
-        Powner            : 'Richard Cook',
-        PreleaseDate      : '2017-03-08: 10: 30',
-        Pdescription      : 'Print Portfolio Items',
+        Pversion: 'v5.2b',
+        PappID: 'AC Print Portfolio Items',
+        Powner: 'Richard Cook',
+        PreleaseDate: '2017-03-09: 00:24 GMT',
+        Pdescription: 'Print Portfolio Items',
         // Git Repo Details
-        PrepoAddress      : 'not shared',
+        PrepoAddress: 'not shared',
         // Emailer Contact Details
-        PsupportEmail     : 'richard.cook@barclaycard.co.uk',
+        pEmailSupportMessage: '*** [AC Print Portfolio Items] Custom Application AC Support Request',
+        pEmailSupportAddress: 'richard.cook@barclaycard.co.uk',
+        pEmailerMessage: '========== Please add your comments above this line ==========',
         // Rally Colours
-        PrallyColours_10  : ['#0096DB','#004A9D','#FF3C00','#FF8D00','#FFDC00','#6F7376','#FFF','#FF0069','#41006E','#00710C'],
+        PrallyColours_10: ['#0096DB', '#004A9D', '#FF3C00', '#FF8D00', '#FFDC00', '#6F7376', '#FFF', '#FF0069', '#41006E', '#00710C'],
         // Barclays Colours
-        PbarclaysColours_5: ['#145FAC','#437EA0','#00AEEF','#FFF','#FFA000'],
-        // Barclaycard Colors
+        PbarclaysColours_5: ['#145FAC', '#437EA0', '#00AEEF', '#FFF', '#FFA000'],
+        // Bits we need
+        pInfoHtml: '',
+        pCardHtml: '',
+        pStoreData: '',
+        // Needs automating!
+        portfolioType: [
+            'PortfolioItem/BUStrategicObjectives',
+            'PortfolioItem/STPortfolioObjectives',
+            'PortfolioItem/PortfolioEpic',
+            'PortfolioItem/BusinessOutcome',
+            'PortfolioItem/Feature',
+        ], // Portfolio Types
     },
-    constructor           : function (config) {
+    constructor: function (config) {
         this.initConfig(config);
     },
 });
                 Ext.define('App.Loader', {
     _build               : function (type) {
         var output;
-        var colour_Array = Ext.create('App.Runtime').PrallyColours_10;
+        var colour_Array = Ext.create('App.Config').PrallyColours_10;
         var colour_Norm  = colour_Array[Math.floor((Math.random() * 10))];
         var Colour_Dark  = Ext.create('App.Tools')._shadeBlendConvert(colour_Norm, -30);
         switch (type) {
             case 'bar'   : 
-                var html = 'style      = "background-image: repeating-linear-gradient(      -45deg,      ' + colour_Norm + ',      ' + colour_Norm + ' 11px,      ' + Colour_Dark + ' 10px,      ' + Colour_Dark + ' 20px")';
+                var html = 'style= "background-image: repeating-linear-gradient(-45deg,' + colour_Norm + ',' + colour_Norm + ' 11px,' + Colour_Dark + ' 10px,' + Colour_Dark + ' 20px")';
                 output   = '<div class = "bar" ' + html + '></div>';
                 break;
             case 'wave'  : 
@@ -463,7 +61,7 @@ Ext.define('PrintApp', {
     }
 });
 
-                Ext.define('App.Card', {
+                Ext.define('App.Cards', {
     // Created by Richard Cook ::: Cookra Limited for Barclays
     // 
     theMarkup: null,
@@ -721,7 +319,7 @@ Ext.define('PrintApp', {
             // Normal
             content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
         }
-        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">' + content + '</div>';
+        output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">' + content + '</div>';
         return output;
     },
     _print: function (data) {
@@ -834,17 +432,7 @@ Ext.define('PrintApp', {
     }
 });
                 Ext.define('App.Info', {
-    theMarkup: null,
-    debugShow: true,
-    _showDebug: function (msg){
-        if(this.debugShow===true){
-            //console.log(msg);
-        }
-    },
     _build: function (style,startString,data,endString) {
-        this._showDebug('===== @Info Happy Birthday!');
-        this._showDebug('@Info Class Saying Hi! - I build the output HTML for displaying the info bar');
-        this._showDebug('=====');
         var output;
         if(style==='header'){
             output = '<p style="font-size:25px;font-weight:bolder;margin:0;padding:0"><span style="color:#00AEEF;">'+startString+' </span><span style="color:black;">'+data+' '+endString+'</span></p>';
@@ -872,97 +460,507 @@ Ext.define('PrintApp', {
         var BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
         return "#" + RR + GG + BB;
     },
-});
-                Ext.define('App.Version', {
-    constructor: function () {
-        var theVersion = Ext.getVersion().version;
-        return theVersion;
+    _common_Array_Outputter: function (array) {
+        var character_Return = '\r\n';
+        var l = array.length;
+        var output = '';
+        var padSize = String(l).length;
+        for (var x = 0; x < l; x++) {
+            output += '[#' + this._number_Pad(x, padSize) + '] ' + array[x] + character_Return;
+        }        
+        console.log(output);
+        array = undefined;
+        return output;
+    },
+    _number_Pad: function (num, size) {
+        return Array(Math.max(size - String(num).length + 1, 0)).join(0) + num;
     }
 });
+                Ext.define('App.System', {
+    // Created by Richard Cook ::: Cookra Limited
+    // Barclaycard richard.cook@barclaycard.co.uk
+    // v4.8
+    // Updated 2017-03-08
+    _this_Application_Details: function () {
+        var a = [];
+        a.push('> - - - - - - - - - - < Application Details');
+        a.push('> App Name > ' + 'Print');
+        a.push('> App Version > ' + 'v5.0b');
+        a.push('> App Version Status > ' + 'beta');
+        a.push('> App Designer > ' + 'Richard Cook');
+        a.push('> App Description > ' + 'Custom Ext JS Application that Prints Portfolio Items');
+        a.push('> App Release Date > ' + '2017-03-08');
+        return Ext.create('App.Tools')._common_Array_Outputter(a);
+    },
+    _this_Application_Output: function (array) {
+        var a = [];
+        a.push('> - - - - - - - - - - < Application Output');
+        for (var i = 0; i < array.length; i++) {
+            a.push('> ' + array[i].raw.FormattedID + array[i].raw.Name + array[i].raw._ref);
+        }
+        array = undefined;
+        return Ext.create('App.Tools')._common_Array_Outputter(a);
+    },
+    _user_Vars: function () {
+        var a = [];
+        a.push('> - - - - - - - - - - < Local Details');
+        a.push('> Browser Web App Name > ' + navigator.appName);
+        a.push('> Browser User Agent > ' + navigator.userAgent);
+        a.push('> Browser Version > ' + navigator.appVersion);
+        a.push('> Browser Code Name > ' + navigator.appCodeName);
+        a.push('> Platform > ' + navigator.platform);
+        a.push('> OS CPU > ' + navigator.oscpu);
+        a.push('> Cookies > ' + navigator.cookieEnabled);
+        a.push('> Outer Width > ' + window.outerWidth);
+        a.push('> Outer Height > ' + window.outerHeight);
+        a.push('> Inner Width > ' + window.innerWidth);
+        a.push('> Inner Height > ' + window.innerHeight);
+        a.push('> Base URI > ' + document.getElementsByTagName('script')[0].baseURI);
+        a.push('> SRC > ' + document.getElementsByTagName('script')[0].src);
+        a.push('> LocalName > ' + document.getElementsByTagName('script')[0].localName);
+        a.push('> Type > ' + document.getElementsByTagName('script')[0].type);
+        return Ext.create('App.Tools')._common_Array_Outputter(a);
+    },
+    _user_Rally_Vars: function (context_User, context_Project, context_Workspace) {
+        var a = [];
+        a.push('> - - - - - - - - - - < User Details');
+        a.push('> AC User Username > ' + context_User.UserName);
+        a.push('> AC User Name > ' + context_User._refObjectName);
+        a.push('> AC User Role > ' + context_User.Role);
+        a.push('> AC Application Launched From Node > ' + context_Project._refObjectName);
+        a.push('> AC Application Workspace Name > ' + context_Workspace._refObjectName);
+        a.push('> AC Application Workspace Date/Time Format > ' + context_Workspace.WorkspaceConfiguration.DateFormat);
+        return Ext.create('App.Tools')._common_Array_Outputter(a);
+    },
+});
                 Ext.define('App.Emailer', {
-    _emailer: function (coreData, xData1, xData2, xData3, xData4) {
-        var gProp           = App.Runtime;
-        var PcontactSubject = 'REF: AC APP ';
-        var PcontactMessage = '   = === === === = Please leave your message above this line === === === = ';
-        // User Vars
-        var yourapp         = '> Browser Web App Name > ' + navigator.appName;
-        var yourappalt      = '> Browser User Agent > ' + navigator.userAgent;
-        var yourversion     = '> Browser Version > ' + navigator.appVersion;
-        var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
-        var yourplatform    = '> Platform > ' + navigator.platform;
-        var youroscpu       = '> OS CPU > ' + navigator.oscpu;
-        var yourcookie      = '> Cookie Enabled > ' + navigator.cookieEnabled;
-        var outwinw         = '> Owidth > ' + window.outerWidth;
-        var outwinh         = '> Oheight > ' + window.outerHeight;
-        var inwinw          = '> Iwidth > ' + window.innerWidth;
-        var inwinh          = '> Iheight > ' + window.innerHeight;
-        var uri             = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
-        var src             = '> SRC > ' + document.getElementsByTagName('script')[0].src;
-        var localname       = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
-        var type            = '> Type > ' + document.getElementsByTagName('script')[0].type;
-        var userData        = [
-            yourapp,
-            yourappalt,
-            yourversion,
-            yourappcodename,
-            yourplatform,
-            youroscpu,
-            yourcookie,
-            outwinw,
-            outwinh,
-            inwinw,
-            inwinh,
-            uri,
-            src,
-            localname,
-            type
-        ];
-        // Tools
-        var charReturn = '\r\n';
-        // Emailer
-        var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
-        var message = PcontactMessage;
-        var report = '';
+    _emailer: function (application_Output_Array, context_User, context_Project, context_Workspace) {
+        var string, subject;
+        subject = Ext.create('App.Config').pEmailSupportMessage;
+        string = '\r\n';
+        string += '\r\n';
+        string += '\r\n';
+        string += Ext.create('App.Config').pEmailerMessage;
+        string += '\r\n';
+        string += Ext.create('App.System')._this_Application_Details();
+        string += Ext.create('App.System')._user_Vars();
+        string += Ext.create('App.System')._user_Rally_Vars(context_User, context_Project, context_Workspace);
+        string += Ext.create('App.System')._this_Application_Output(application_Output_Array);
+        console.log(string);
+        string = encodeURIComponent(string);
+        window.location = 'mailto:' + Ext.create('App.Config').pEmailSupportAddress + '?subject=' + subject + '&body=' + string;
+    },
+});
+                Ext.define('MySharedData', {
+    singleton: true,
+    printHtml: '',
+    supportArray: [],
+    infoString: '',
+    // Needs automating!
+    portfolioType: [
+        'PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
+});
 
-        report += charReturn + charReturn;
-        report += 'Environment Report > ' + charReturn;
-        report += '> Sencha ExtJS Version > ' + Ext.getVersion().version + charReturn + charReturn;
-        report += 'Agile Central Report > ' + charReturn;
-        report += '> AC User Username > ' + xData1.UserName+ charReturn;
-        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
-        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
-        report += '> AC User Role > ' + xData1.Role+ charReturn;
-        report += '> AC User Loc > ' + xData1._ref+ charReturn;
-        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
-        report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
-        report += '> AC Application Node > ' + xData2.Name+ charReturn;
-        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
-        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
-        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
-        report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
-        report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
-        report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
+Ext.define('PrintApp', {
+    extend: 'Rally.app.App',
+    theStore: undefined, // app level references to the store and grid for easy access in various methods
+    printHtml: null,
+    theFetch: ['FormattedID',
+        'Name',
+        'Project',
+        'Owner',
+        'Size',
+        'DisplayColor',
+        'State',
+        'PreliminaryEstimate',
+        'Parent',
+        'Release',
+        'c_QRWP',
+        '_type',
+        'PortfolioItemType',
+        '_refObjectName',
+        'c_OrderBookNumberOBN'
+    ],
+    launch: function () {
+        console.log('\033[2J');
+        var me = this;
+        var a_context_User = this.getContext().getUser();
+        var a_context_Project = this.getContext().getProject();
+        var a_context_Workspace = this.getContext().getWorkspace();
+        //========================================================================================================================================================================
+        //
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //
+        // CONTAINER
+        //    
+        var layout = Ext.create('Ext.container.Container', {
+            layout: 'fit',
+            align: 'stretch',
+            height: '100%',
+            layoutConfig: {
+                align: 'stretch',
+            },
+            items: [{
+                //========================================================================================================================================================================
+                //
+                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                //
+                // HEADER
+                //                
+                xtype: 'panel',
+                border: false,
+                layout: 'hbox',
+                html: '',
+                id: 'myHeader',
+                itemId: 'header',
+                width: '100%',
+                items: [{
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // FILTER GROUP LEFT (WORK TOGETHER)
+                    //    
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'These work together',
+                    id: 'panel_Filter_Multi',
+                    itemId: 'panel_Filter_Multi',
+                    margin: '10 5 5 0',
+                    bodyPadding: 10,
+                    cls: 'mainPageGroupPanel',
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // USER SEARCH
+                        //   
+                        xtype: 'rallyusersearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        fieldLabel: 'Team Member:',
+                        project: this.getContext().getProject(),
+                        //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                        itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
+                        //labelAlign: 'right',
+                        id: 'user-combobox',
+                        // multiSelect: true, // <------------explore this
+                        margin: '0 5 0 0',
+                        //emptyText: 'All Users',
+                        noEntryText: '-- All --',
+                        //noEntryValue: 'All',
+                        defaultSelectionPosition: 'first',
+                        listeners: {
+                            select: function () {
+                                this._mask('myInfoPanel');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // PORTFOLIO ITEM
+                        //   
+                        xtype: 'rallyportfolioitemtypecombobox',
+                        itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Select',
+                        labelAlign: 'left',
+                        id: 'portfolio-combobox',
+                        margin: '0 5 0 0',
+                        listeners: {
+                            select: function () {
+                                this._mask('myInfoPanel');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, ]
+                }, {
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // FILTER GROUP RIGHT (STANDALONE)
+                    //   
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'Standalone',
+                    id: 'panel_Filter_Single',
+                    itemId: 'panel_Filter_Single',
+                    margin: '10 5 5 10',
+                    bodyPadding: 10,
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // SEARCH field
+                        //
+                        xtype: 'rallysearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Search',
+                        labelAlign: 'left',
+                        width: 350,
+                        id: 'search-combobox',
+                        margin: '0 5 0 0',
+                        listeners: {
+                            specialkey: function (field, e) {
+                                if (e.getKey() === e.ENTER) {
+                                    this._mask('myInfoPanel');
+                                    me._kickoff('Search');
+                                }
+                            },
+                            select: function () {
+                                this._mask('myInfoPanel');
+                                me._kickoff('Search');
+                            },
+                            scope: me
+                        }
+                    }]
+                }, {
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // ACTIONS
+                    //  
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'Actions',
+                    id: 'panel_Filter_Actions',
+                    itemId: 'panel_Filter_Actions',
+                    margin: '10 5 5 10',
+                    bodyPadding: 10,
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // PRINT BUTTON
+                        //
+                        xtype: 'button',
+                        text: 'Print Results',
+                        margin: '0 5 0 5',
+                        handler: this._getPrint,
+                        style: {
+                            background: '#00AEEF'
+                        },
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // FLEX 1
+                        //
+                        xtype: 'component',
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // SUPPORT BUTTON
+                        //
+                        xtype: 'button',
+                        text: 'Support',
+                        margin: '0 5 0 5',
+                        style: {
+                            background: 'red'
+                        },
+                        listeners: {
+                            afterrender: function (v) {
+                                v.el.on('click', function () {
+                                    Ext.create('App.Emailer')._emailer(MySharedData.supportArray, a_context_User, a_context_Project, a_context_Workspace);
+                                });
+                            },
+                            scope: me
+                        }
+                    }]
+                }],
+            }, {
+                xtype: 'container',
+                layout: 'fit',
+                align: 'stretch',
+                height: '100%',
+                layoutConfig: {
+                    align: 'stretch',
+                },
+                items: [{
+                    xtype: 'box',
+                    id: 'myInfoPanel',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    height: 40,
+                    width: '100%',
 
-        report += 'Build Details ' + charReturn;
-        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
-        report += '> Owner > ' + gProp.Powner + charReturn;
-        report += '> Version > ' + gProp.Pversion + charReturn;
-        report += '> Description > ' + gProp.Pdescription + charReturn;
-        report += '> App ID > ' + gProp.PappID + charReturn + charReturn;
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myInfoPanel',
+                        html: '',
 
-        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
-        for (var i = 0; i < coreData.length; i++) {
-            report += '> ' + coreData[i].raw.FormattedID + ' : ';
-            report += coreData[i].raw.Name + ' : ';
-            report += coreData[i].raw._ref + charReturn;
+                    },
+                    listeners: {
+                        afterrender: function () {
+                        },
+                        scope: me
+                    },
+                    flex: 1,
+                }, {
+                    xtype: 'box',
+                    id: 'myTarget',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    width: '100%',
+                    style: {
+                        borderTop: '1'
+                    },
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myContent',
+                        html: '',
+                    },
+                    listeners: {
+                        afterrender: function () {
+
+                        },
+                        scope: me
+                    },
+                    flex: 1
+                }]
+            }, ]
+        });
+        this.add(layout);
+    },
+    _kickoff: function (type) {
+        this._loadData(type);
+    },
+    _getFilters: function (t) {
+        var theFilter, p, pp, folioFilter, userFilter;
+        if (t === 'Search') {
+            p = Ext.getCmp('search-combobox').getRecord().get('Name');
+            theFilter = Ext.create('Rally.data.wsapi.Filter', {
+                property: 'Name',
+                operation: '=',
+                value: p,
+            });
         }
-        report += charReturn;
-        report += 'System Report Found ' + userData.length + ' items'+charReturn;
-        for (var x = 0; x < userData.length; x++) {
-            report += userData[x] + charReturn;
+        if (t === 'User') {
+            if (this.down('rallyusersearchcombobox').getValue() === null) {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                theFilter = folioFilter;
+            } else {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                pp = this.down('rallyusersearchcombobox');
+                userFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'owner',
+                    value: pp.getValue(),
+                });
+                theFilter = folioFilter.and(userFilter);
+            }
         }
-        report = encodeURIComponent(report);      
-        return window.location = 'mailto:' + gProp.PsupportEmail + '?subject=' + subject + '&body=' + message + report;
+        p = undefined;
+        pp = undefined;
+        return theFilter;
+    },
+    _loadData: function (type) {
+        var me = this;
+        var myFilter = this._getFilters(type);
+        if (me.theStore) {
+            me.theStore.setFilter(myFilter);
+            me.theStore.load();
+        } else {
+            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
+                model: 'PortfolioItem',
+                autoLoad: true, // <----- Don't forget to set this to true! heh
+                filters: myFilter,
+                limit: Infinity,
+                type: 'PortfolioItem',
+                listeners: {
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                    },
+                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
+                },
+                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
+            });
+
+        }
+    },
+    _createResults: function (myData) {
+        var itemType;
+        MySharedData.supportArray = myData;
+        var html = '<div id="cards">';
+        for (var x = 0; x < myData.length; x++) {
+            html += Ext.create('App.Cards')._build(x, myData.length, myData[x]);
+            itemType = myData[x].raw._type;
+        }
+        html += '</div>';
+        Ext.fly('myTarget').update(html);
+        this._unmask();
+        MySharedData.infoString += Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header', '<style="color:blue;">Found</style> ', x, ' Portfolio items that match your search criteria'));
+        MySharedData.printHtml = html;
+    },
+    _getPrint: function () {
+        var printHtml = null;
+        printHtml += Ext.create('App.Cards')._print(MySharedData.printHtml);
+        return printHtml;
+    },
+    _mask: function () {
+        Ext.fly('myInfoPanel').update(Ext.create('App.Loader')._build('bar'));
+        //Ext.fly('myTarget').update(Ext.create('App.Loader')._build('wave'));
+    },
+    _unmask: function () {
+        if (this.sparkler) {
+            this.sparkler = null;
+            //this.sparkler.destroy();
+        }
     },
 });
 

@@ -1,0 +1,44 @@
+         yourappalt      = '> Browser User Agent > ' + navigator.userAgent;
+         yourversion     = '> Browser Version > ' + navigator.appVersion;
+         yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
+         yourplatform    = '> Platform > ' + navigator.platform;
+         youroscpu       = '> OS CPU > ' + navigator.oscpu;
+         yourcookie      = '> Cookie Enabled > ' + navigator.cookieEnabled;
+         outwinw         = '> Owidth > ' + window.outerWidth;
+         outwinh         = '> Oheight > ' + window.outerHeight;
+         inwinw          = '> Iwidth > ' + window.innerWidth;
+         inwinh          = '> Iheight > ' + window.innerHeight;
+         uri             = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
+         src             = '> SRC > ' + document.getElementsByTagName('script')[0].src;
+         localname       = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
+         type            = '> Type > ' + document.getElementsByTagName('script')[0].type;
+         userData        = [
+
+        ];
+
+                report += charReturn + charReturn;
+        report += 'Build Details ' + charReturn;
+        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
+        report += '> Owner > ' + gProp.Powner + charReturn;
+        report += '> Version > ' + gProp.Pversion + charReturn;
+        report += '> Description > ' + gProp.Pdescription + charReturn;
+        report += '> App ID > ' + gProp.PappID + charReturn;
+        report += charReturn + charReturn;
+        report += 'Environment Report ' + charReturn;
+        report += '> Sencha ExtJS Version > ' + Ext.create('App.System')._check_Ext_Version();
+        report += 'Agile Central Report > ' + charReturn;
+        report += '> AC User Username > ' + xData1.UserName+ charReturn;
+        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
+        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
+        report += '> AC User Role > ' + xData1.Role+ charReturn;
+        //report += '> AC User Loc > ' + xData1._ref+ charReturn;
+        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
+        report += '> AC Application Node > ' + xData2.Name+ charReturn;
+        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
+        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
+        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
+        report += charReturn + charReturn;
+        //report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
+        //report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
+        //report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
+        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;

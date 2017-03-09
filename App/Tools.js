@@ -14,4 +14,19 @@ Ext.define('App.Tools', {
         var BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
         return "#" + RR + GG + BB;
     },
+    _common_Array_Outputter: function (array) {
+        var character_Return = '\r\n';
+        var l = array.length;
+        var output = '';
+        var padSize = String(l).length;
+        for (var x = 0; x < l; x++) {
+            output += '[#' + this._number_Pad(x, padSize) + '] ' + array[x] + character_Return;
+        }        
+        console.log(output);
+        array = undefined;
+        return output;
+    },
+    _number_Pad: function (num, size) {
+        return Array(Math.max(size - String(num).length + 1, 0)).join(0) + num;
+    }
 });

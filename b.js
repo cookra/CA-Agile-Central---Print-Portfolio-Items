@@ -1,7 +1,7 @@
 Ext.define('MySharedData', {
     singleton: true,
     printHtml: '',
-    supportArray: [],
+    a_storeData: [],
     // Needs automating!
     portfolioType: [
         'PortfolioItem/BUStrategicObjectives',
@@ -148,7 +148,7 @@ Ext.define('PrintApp', {
                             listeners: {
                                 afterrender: function (v) {
                                     v.el.on('click', function () {
-                                        var email = new gEpros._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                        var email = new gEpros._emailer(MySharedData.a_storeData, xData1, xData2, xData3, xData4);
                                         //console.log('@ Launch Added Support Button');
                                     });
                                 },
@@ -259,7 +259,7 @@ Ext.define('PrintApp', {
     },
     _createResults: function (myData) {
         ////console.log('@ _createResults Building HTML based on [myData] passed by the store');
-        MySharedData.supportArray = myData;
+        MySharedData.a_storeData = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
             html += Ext.create('App.Card')._build(x, myData.length, myData[x], this.theType);

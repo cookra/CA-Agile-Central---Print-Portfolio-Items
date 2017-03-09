@@ -1,4 +1,4 @@
-Ext.define('App.Card', {
+Ext.define('App.Cards', {
     // Created by Richard Cook ::: Cookra Limited for Barclays
     // 
     theMarkup: null,
@@ -256,7 +256,7 @@ Ext.define('App.Card', {
             // Normal
             content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
         }
-        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">' + content + '</div>';
+        output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">' + content + '</div>';
         return output;
     },
     _print: function (data) {

@@ -36,10 +36,9 @@ Ext.define('PrintApp', {
     launch: function () {
         console.log('\033[2J');
         var me = this;
-        var xData1 = this.getContext().getUser();
-        var xData2 = this.getContext().getProject();
-        var xData3 = this.getContext().getWorkspace();
-        var xData4 = this.getContext().getSubscription();
+        var a_context_User = this.getContext().getUser();
+        var a_context_Project = this.getContext().getProject();
+        var a_context_Workspace = this.getContext().getWorkspace();
         //========================================================================================================================================================================
         //
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -136,7 +135,6 @@ Ext.define('PrintApp', {
                         margin: '0 5 0 0',
                         listeners: {
                             select: function () {
-                                console.log('a');
                                 this._mask('myInfoPanel');
                                 me._kickoff('User');
                             },
@@ -256,7 +254,7 @@ Ext.define('PrintApp', {
                         listeners: {
                             afterrender: function (v) {
                                 v.el.on('click', function () {
-                                    Ext.create('App.Emailer')._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                    Ext.create('App.Emailer')._emailer(MySharedData.supportArray, a_context_User, a_context_Project, a_context_Workspace);
                                 });
                             },
                             scope: me
@@ -387,7 +385,7 @@ Ext.define('PrintApp', {
         MySharedData.supportArray = myData;
         var html = '<div id="cards">';
         for (var x = 0; x < myData.length; x++) {
-            html += Ext.create('App.Card')._build(x, myData.length, myData[x]);
+            html += Ext.create('App.Cards')._build(x, myData.length, myData[x]);
             itemType = myData[x].raw._type;
         }
         html += '</div>';
@@ -398,7 +396,7 @@ Ext.define('PrintApp', {
     },
     _getPrint: function () {
         var printHtml = null;
-        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        printHtml += Ext.create('App.Cards')._print(MySharedData.printHtml);
         return printHtml;
     },
     _mask: function () {
