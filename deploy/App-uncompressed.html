@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print</title>
+
+    <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                Ext.define('MySharedData', {
+    singleton: true,
+    printHtml: '',
+    supportArray: [],
+    infoString: '',
+    // Needs automating!
+    portfolioType: [
+        'PortfolioItem/GroupStrategy',
+        'PortfolioItem/BUStrategicObjectives',
+        'PortfolioItem/STPortfolioObjectives',
+        'PortfolioItem/PortfolioEpic',
+        'PortfolioItem/BusinessOutcome',
+        'PortfolioItem/Feature',
+    ], // Portfolio Types
+});
+
+Ext.define('PrintApp', {
+    extend: 'Rally.app.App',
+    theStore: undefined, // app level references to the store and grid for easy access in various methods
+    printHtml: null,
+    theFetch: ['FormattedID',
+        'Name',
+        'Project',
+        'Owner',
+        'Size',
+        'DisplayColor',
+        'State',
+        'PreliminaryEstimate',
+        'Parent',
+        'Release',
+        'c_QRWP',
+        '_type',
+        'PortfolioItemType',
+        '_refObjectName',
+        'c_OrderBookNumberOBN'
+    ],
+    launch: function () {
+        console.log('\033[2J');
+        var me = this;
+        var xData1 = this.getContext().getUser();
+        var xData2 = this.getContext().getProject();
+        var xData3 = this.getContext().getWorkspace();
+        var xData4 = this.getContext().getSubscription();
+        //========================================================================================================================================================================
+        //
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //
+        // CONTAINER
+        //    
+        var layout = Ext.create('Ext.container.Container', {
+            layout: 'fit',
+            align: 'stretch',
+            height: '100%',
+            layoutConfig: {
+                align: 'stretch',
+            },
+            items: [{
+                //========================================================================================================================================================================
+                //
+                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                //
+                // HEADER
+                //                
+                xtype: 'panel',
+                border: false,
+                layout: 'hbox',
+                html: '',
+                id: 'myHeader',
+                itemId: 'header',
+                width: '100%',
+                items: [{
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // FILTER GROUP LEFT (WORK TOGETHER)
+                    //    
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'These work together',
+                    id: 'panel_Filter_Multi',
+                    itemId: 'panel_Filter_Multi',
+                    margin: '10 5 5 0',
+                    bodyPadding: 10,
+                    cls: 'mainPageGroupPanel',
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // USER SEARCH
+                        //   
+                        xtype: 'rallyusersearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        fieldLabel: 'Team Member:',
+                        project: this.getContext().getProject(),
+                        //value: Rally.util.Ref.getRelativeUri(this.getContext().getUser()),
+                        itemId: 'user-combobox', // we'll use this item ID later to get the users' selection
+                        //labelAlign: 'right',
+                        id: 'user-combobox',
+                        // multiSelect: true, // <------------explore this
+                        margin: '0 5 0 0',
+                        //emptyText: 'All Users',
+                        noEntryText: '-- All --',
+                        //noEntryValue: 'All',
+                        defaultSelectionPosition: 'first',
+                        listeners: {
+                            select: function () {
+                                this._mask('myInfoPanel');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // PORTFOLIO ITEM
+                        //   
+                        xtype: 'rallyportfolioitemtypecombobox',
+                        itemId: 'portfolio-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Select',
+                        labelAlign: 'left',
+                        id: 'portfolio-combobox',
+                        margin: '0 5 0 0',
+                        listeners: {
+                            select: function () {
+                                console.log('a');
+                                this._mask('myInfoPanel');
+                                me._kickoff('User');
+                            },
+                            scope: me
+                        }
+                    }, ]
+                }, {
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // FILTER GROUP RIGHT (STANDALONE)
+                    //   
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'Standalone',
+                    id: 'panel_Filter_Single',
+                    itemId: 'panel_Filter_Single',
+                    margin: '10 5 5 10',
+                    bodyPadding: 10,
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // SEARCH field
+                        //
+                        xtype: 'rallysearchcombobox',
+                        storeConfig: {
+                            model: 'PortfolioItem'
+                        },
+                        itemId: 'search-combobox', // we'll use this item ID later to get the users' selection
+                        fieldLabel: 'Search',
+                        labelAlign: 'left',
+                        width: 350,
+                        id: 'search-combobox',
+                        margin: '0 5 0 0',
+                        listeners: {
+                            specialkey: function (field, e) {
+                                if (e.getKey() === e.ENTER) {
+                                    this._mask('myInfoPanel');
+                                    me._kickoff('Search');
+                                }
+                            },
+                            select: function () {
+                                this._mask('myInfoPanel');
+                                me._kickoff('Search');
+                            },
+                            scope: me
+                        }
+                    }]
+                }, {
+                    //========================================================================================================================================================================
+                    //
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    //
+                    // ACTIONS
+                    //  
+                    xtype: 'panel',
+                    layout: 'hbox',
+                    //title: 'Actions',
+                    id: 'panel_Filter_Actions',
+                    itemId: 'panel_Filter_Actions',
+                    margin: '10 5 5 10',
+                    bodyPadding: 10,
+                    items: [{
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // PRINT BUTTON
+                        //
+                        xtype: 'button',
+                        text: 'Print Results',
+                        margin: '0 5 0 5',
+                        handler: this._getPrint,
+                        style: {
+                            background: '#00AEEF'
+                        },
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // FLEX 1
+                        //
+                        xtype: 'component',
+                    }, {
+                        //========================================================================================================================================================================
+                        //
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        //
+                        // SUPPORT BUTTON
+                        //
+                        xtype: 'button',
+                        text: 'Support',
+                        margin: '0 5 0 5',
+                        style: {
+                            background: 'red'
+                        },
+                        listeners: {
+                            afterrender: function (v) {
+                                v.el.on('click', function () {
+                                    Ext.create('App.Emailer')._emailer(MySharedData.supportArray, xData1, xData2, xData3, xData4);
+                                });
+                            },
+                            scope: me
+                        }
+                    }]
+                }],
+            }, {
+                xtype: 'container',
+                layout: 'fit',
+                align: 'stretch',
+                height: '100%',
+                layoutConfig: {
+                    align: 'stretch',
+                },
+                items: [{
+                    xtype: 'box',
+                    id: 'myInfoPanel',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    height: 40,
+                    width: '100%',
+
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myInfoPanel',
+                        html: '',
+
+                    },
+                    listeners: {
+                        afterrender: function () {
+                        },
+                        scope: me
+                    },
+                    flex: 1,
+                }, {
+                    xtype: 'box',
+                    id: 'myTarget',
+                    autoScroll: true,
+                    margin: '10 5 5 10',
+                    width: '100%',
+                    style: {
+                        borderTop: '1'
+                    },
+                    autoEl: {
+                        tag: 'div',
+                        cls: 'myContent',
+                        html: '',
+                    },
+                    listeners: {
+                        afterrender: function () {
+
+                        },
+                        scope: me
+                    },
+                    flex: 1
+                }]
+            }, ]
+        });
+        this.add(layout);
+    },
+    _kickoff: function (type) {
+        this._loadData(type);
+    },
+    _getFilters: function (t) {
+        var theFilter, p, pp, folioFilter, userFilter;
+        if (t === 'Search') {
+            p = Ext.getCmp('search-combobox').getRecord().get('Name');
+            theFilter = Ext.create('Rally.data.wsapi.Filter', {
+                property: 'Name',
+                operation: '=',
+                value: p,
+            });
+        }
+        if (t === 'User') {
+            if (this.down('rallyusersearchcombobox').getValue() === null) {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                theFilter = folioFilter;
+            } else {
+                p = this.down('rallyportfolioitemtypecombobox');
+                folioFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'PortfolioItemType',
+                    operation: '=',
+                    value: p.getValue(),
+                });
+                pp = this.down('rallyusersearchcombobox');
+                userFilter = Ext.create('Rally.data.wsapi.Filter', {
+                    property: 'owner',
+                    value: pp.getValue(),
+                });
+                theFilter = folioFilter.and(userFilter);
+            }
+        }
+        p = undefined;
+        pp = undefined;
+        return theFilter;
+    },
+    _loadData: function (type) {
+        var me = this;
+        var myFilter = this._getFilters(type);
+        if (me.theStore) {
+            me.theStore.setFilter(myFilter);
+            me.theStore.load();
+        } else {
+            me.theStore = Ext.create('Rally.data.wsapi.Store', { // create theStore on the App (via this) so the code above can test for it's existence!
+                model: 'PortfolioItem',
+                autoLoad: true, // <----- Don't forget to set this to true! heh
+                filters: myFilter,
+                limit: Infinity,
+                type: 'PortfolioItem',
+                listeners: {
+                    load: function (myStore, myData) {
+                        me._createResults(myData); // if we did NOT pass scope:this below, this line would be incorrectly trying to call _createGrid() on the store which does not exist.
+                    },
+                    scope: me // This tells the wsapi data store to forward pass along the app-level context into ALL listener functions
+                },
+                fetch: this.theFetch // Look in the WSAPI docs online to see all fields available!
+            });
+
+        }
+    },
+    _createResults: function (myData) {
+        var itemType;
+        MySharedData.supportArray = myData;
+        var html = '<div id="cards">';
+        for (var x = 0; x < myData.length; x++) {
+            html += Ext.create('App.Card')._build(x, myData.length, myData[x]);
+            itemType = myData[x].raw._type;
+        }
+        html += '</div>';
+        Ext.fly('myTarget').update(html);
+        this._unmask();
+        MySharedData.infoString += Ext.fly('myInfoPanel').update(Ext.create('App.Info')._build('header', '<style="color:blue;">Found</style> ', x, ' Portfolio items that match your search criteria'));
+        MySharedData.printHtml = html;
+    },
+    _getPrint: function () {
+        var printHtml = null;
+        printHtml += Ext.create('App.Card')._print(MySharedData.printHtml);
+        return printHtml;
+    },
+    _mask: function (target) {
+        Ext.fly('myInfoPanel').update(Ext.create('App.Loader')._build('bar'));
+        //Ext.fly('myTarget').update(Ext.create('App.Loader')._build('wave'));
+    },
+    _unmask: function () {
+        if (this.sparkler) {
+            this.sparkler = null;
+            //this.sparkler.destroy();
+        }
+    },
+});
+                Ext.define('App.Runtime', {
+    singleton: true,
+    config: {
+        // Versioning
+        Pversion: 'v4.0b',
+        PappID: 'AC Print Portfolio Items',
+        Powner: 'Richard Cook',
+        PreleaseDate: '2017-03-07 : 13:27',
+        Pdescription: 'Print Portfolio Items',
+        // Git Repo Details
+        PrepoAddress: 'not shared',
+        // Emailer Contact Details
+        PsupportEmail: 'richard.cook@barclaycard.co.uk',
+        // Rally Colours
+        PrallyColours_10: ['#0096DB','#004A9D','#FF3C00','#FF8D00','#FFDC00','#6F7376','#FFF','#FF0069','#41006E','#00710C'],
+        // Barclays Colours
+        PbarclaysColours_5: ['#145FAC','#437EA0','#00AEEF','#FFF','#FFA000'],
+        // Barclaycard Colors
+    },
+    constructor: function (config) {
+        this.initConfig(config);
+    },
+});
+                Ext.define('App.Loader', {
+    _build: function (type) {
+        var output;
+        var gProp = App.Runtime;
+        var colour_Array = gProp.PrallyColours_10;
+        var colour_Norm = colour_Array[Math.floor((Math.random() * 10))];
+        var Colour_Dark = Ext.create('App.Tools')._shadeBlendConvert(colour_Norm, -30);
+        switch (type) {
+            case 'bar':
+                var html = 'style="background-image: repeating-linear-gradient(      -45deg,      ' + colour_Norm + ',      ' + colour_Norm + ' 11px,      ' + Colour_Dark + ' 10px,      ' + Colour_Dark + ' 20px")';
+                output = '<div class="bar" ' + html + '></div>';
+                break;
+            case 'wave':
+                output = '<div class="loader">Loading...</div>';
+                break;
+        }
+        return output;
+    }
+});
+                Ext.define('App.Card', {
+    theMarkup: null,
+    _build: function (cardNum, totalCards, data) {
+        var myRelease, myQRWP, myOBN, myColour, myNode, myParentIDName, myEstimate, myName, myOwner, myId;
+
+        // @Scenario 1: Strategic Objective ######################################################################
+        // No OBN
+        // No Release
+        // No Parent
+        // No QRWP
+        // @Scenario 2: Portfolio Objective ######################################################################
+        // No OBN
+        // No Release
+        // No QRWP
+        // @Scenario 2: Portfolio Epic
+        // MUST HAVE OBN !!! (Cost Allocation) ######################################################################
+        // No Release
+        // No QRWP
+        // @Scenario 3: Business Outcome ######################################################################
+        // No OBN
+        // @Scenario 4: Feature
+        // No OBN
+        //========================================================================================================================================================================
+        //
+        // OBN
+        //
+        if (data.raw.c_OrderBookNumberOBN) {
+            myOBN = this._shortenString(data.raw.c_OrderBookNumberOBN, 50);
+        } else {
+            myOBN = this._checkMissing(data.raw._type, 'OBN');
+        }
+        //========================================================================================================================================================================
+        //
+        // COLOUR
+        //
+        if (data.raw.DisplayColor) {
+            myColour = data.raw.DisplayColor;
+        } else {
+            myColour = "#000000";
+        }
+        //========================================================================================================================================================================
+        //
+        // PROJECT
+        //
+        if (data.raw.Project) {
+            myNode = this._shortenString(data.raw.Project.Name, 30);
+        } else {
+            myNode = "No Node Assigned";
+        }
+        //========================================================================================================================================================================
+        //
+        // RELEASE
+        //
+        if (data.raw.Release === undefined || !data.raw.Release) {
+            myRelease = this._checkMissing(data.raw._type, 'Release');
+        } else {
+            myRelease = this._shortenString(data.raw.Release.Name, 25);
+        }
+        //========================================================================================================================================================================
+        //
+        // QRWP
+        //
+        if (data.raw.c_QRWP === undefined || !data.raw.c_QRWP) {
+            myQRWP = this._checkMissing(data.raw._type, 'QRWP');
+        } else {
+            myQRWP = this._shortenString(data.raw.c_QRWP, 26);
+        }
+        //========================================================================================================================================================================
+        //
+        // PARENT
+        //
+        if (data.raw.Parent) {
+            myParentIDName = this._shortenString('['+data.raw.Parent.FormattedID+'] '+data.raw.Parent.Name, 75);
+        } else {
+            myParentIDName = this._checkMissing(data.raw._type, 'Parent');
+        }
+        //========================================================================================================================================================================
+        //
+        // ESTIMATE
+        //
+        if (data.raw.PreliminaryEstimate) {
+            myEstimate = data.raw.PreliminaryEstimate.Name;
+        } else if (data.raw.PlanEstimate) {
+            myEstimate = data.raw.PlanEstimate;
+        } else if (data.raw.Estimate) {
+            myEstimate = data.raw.Estimate;
+        } else {
+            myEstimate = "Not Sized";
+        }
+        //========================================================================================================================================================================
+        //
+        // NAME
+        //
+        if (data.raw._refObjectName) {
+            myName = this._shortenString(data.raw._refObjectName, 84);
+        } else {
+            myName = 'No Name';
+
+        }
+        //========================================================================================================================================================================
+        //
+        // OWNER
+        //
+        if (data.raw.Owner) {
+            myOwner = this._shortenString(data.raw.Owner._refObjectName, 50);
+        } else {
+            myOwner = 'No Owner';
+
+        }
+        myId = data.raw.FormattedID;
+        // NASTY HACK FOR ExtJS (Inline CSS builds) //
+        var font = 'font-family: verdana, Geneva, sans-serif;';
+        var css_Font______PUID = font + 'font-size:18px;';
+        var css_Font_Px_Copy_L = font + 'font-size:12px;';
+        var css_Font_Px_Copy_M = font + 'font-size:11px;';
+        var css_Padding_5 = 'padding:5px;';
+        var css_Bold = 'font-weight:bold;';
+        var css_NORM = 'font-weight:normal;';
+        var css_Text_Align_L = 'text-align:left;';
+        var css_Div_Height_PUID = 'height:33px;';
+        var css_Div_Height_Name = 'height:55px;';
+        var css_Div_Height_Prnt = 'height:55px;';
+        var css_Div_Height_Node = 'height:55px;';
+        var css_Div_Height_Rele = 'height:23px;';
+        var css_Div_Height_QRWP = 'height:23px;';
+        var css_Div_Height__OBN = 'height:23px;';
+        var css_Div_Height_Size = 'height:23px;';
+        var css_Div_Height_Owne = 'height:23px;';
+        var css_Div_Height_Colo = 'height:30px;';
+        var css_Border_Dashed_B = 'border-bottom: 1px dashed grey;';
+        var css_Border_solid__B = 'border-bottom: 1px solid black;';
+        var css_Border____Blank = 'border: none;'; //<-- Not needed but keeps the formatting clean below
+        var css_Start = ' style="';
+        var css_End = '"';
+        var colour_Background_Darken = Ext.create('App.Tools')._shadeBlendConvert(data.raw.DisplayColor, -60);
+        var colour_Background = 'background: repeating-linear-gradient(  -45deg,  ' + data.raw.DisplayColor + ',' + data.raw.DisplayColor + ' 10px,  ' + colour_Background_Darken + ' 10px,  ' + colour_Background_Darken + ' 20px)';
+        var css_Cut_Outs = css_Start + 'border: 1px dashed #00AEEF; padding: 10px;position: relative;float: left;page-break-inside: avoid' + css_End;
+        var css_Card_Con = css_Start + 'border: 1px solid #000;width: 250px; white-space: normal;color: black;background-color: #fff;'+ css_End;
+        // Main CSS Content
+        var css_Row_PUID = css_Div_Height_PUID + css_Border_solid__B + css_Text_Align_L + css_Font______PUID + css_Bold + css_Padding_5;
+        var css_Row_Name = css_Div_Height_Name + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_L + css_NORM + css_Padding_5;
+        var css_Row_Prnt = css_Div_Height_Prnt + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Node = css_Div_Height_Node + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Rele = css_Div_Height_Rele + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_QRWP = css_Div_Height_QRWP + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row__OBN = css_Div_Height__OBN + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Size = css_Div_Height_Size + css_Border_Dashed_B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Owne = css_Div_Height_Owne + css_Border_solid__B + css_Text_Align_L + css_Font_Px_Copy_M + css_NORM + css_Padding_5;
+        var css_Row_Colo = css_Div_Height_Colo + css_Border____Blank + colour_Background;
+        var cssClearBoth = css_Start + 'clear:both' + css_End;
+        var theMarkup =
+            '<div class="css_Cut_Outs" ' + css_Cut_Outs + '>' +
+            '<div class="css_Card_Con" ' + css_Card_Con + '>' +
+            this._add_Div_Detail('css_Row_PUID', 'css_Row_PUID', css_Row_PUID, '#145FAC', 'UID', myId) +
+            this._add_Div_Detail('css_Row_Name', 'css_Row_Name', css_Row_Name, '#145FAC', 'Name', myName) +
+            this._add_Div_Detail('css_Row_Prnt', 'css_Row_Prnt', css_Row_Prnt, '#145FAC', 'Parent', myParentIDName) +
+            this._add_Div_Detail('css_Row_Node', 'css_Row_Node', css_Row_Node, '#145FAC', 'Node', myNode) +
+            this._add_Div_Detail('css_Row_Rele', 'css_Row_Rele', css_Row_Rele, '#145FAC', 'Release', myRelease) +
+            this._add_Div_Detail('css_Row_QRWP', 'css_Row_QRWP', css_Row_QRWP, '#145FAC', 'QRWP', myQRWP) +
+            this._add_Div_Detail('css_Row__OBN', 'css_Row__OBN', css_Row__OBN, '#145FAC', 'OBN', myOBN) +
+            this._add_Div_Detail('css_Row_Size', 'css_Row_Size', css_Row_Size, '#145FAC', 'Size', myEstimate) +
+            this._add_Div_Detail('css_Row_Owne', 'css_Row_Owne', css_Row_Owne, '#145FAC', 'Owner', myOwner) +
+            this._add_Div_Detail('css_Row_Colo', 'css_Row_Colo', css_Row_Colo, '', '') +
+            '</div>' +
+            '</div>';
+        // Printing Layout Shaper 2 x 2 cards
+        if (Math.ceil((cardNum + 1) % 4) === 0) {
+            theMarkup = theMarkup + '<div class=pb></div>';
+        } else if (cardNum === totalCards - 1) {
+            theMarkup = theMarkup + '<div class=cb ' + cssClearBoth + '>&nbsp;</div>';
+        }
+        return theMarkup;
+    },
+    _add_Div_Detail: function (div_Class, div_Id, div_Style, heading_Colour, div_Heading, div_Content) {
+        var content,output;
+        if (div_Heading === '' || div_Content === '') {
+            // Must be an empty div
+            content = '&nbsp;';
+        } else {
+            // Normal
+            content = '<span style="color:' + heading_Colour + '">' + div_Heading + ':</span> ' + div_Content;
+        }
+        var output = '<div class="' + div_Class + '" id="' + div_Id + '" style="' + div_Style + '">'+content+'</div>';
+        return output;
+    },
+    _print: function (data) {
+        var title, options, printWindow, doc;
+        title = 'Print Cards';
+        options = "toolbar=0,menubar=0,scrollbars=yes,scrolling=yes,resizable=yes,width=1000,height=500";
+        printWindow = window.open('', title, options);
+        doc = printWindow.document;
+        doc.write('<html><head><title>Print Feature</title>');
+        doc.write('</head><body class="landscape" style="-webkit-print-color-adjust: exact;">');
+        doc.write(data);
+        doc.write('</body></html>');
+        doc.close();
+        printWindow.print();
+        return false;
+    },
+    // Fits our text into the diaplay panel take the string and the length you want to cut by then adds ... if the string breaches the limit
+    _shortenString: function (string, stringLength) {
+        var output;
+        if (string.length > stringLength) {
+            output = string.substring(stringLength, length) + ' ...';
+        } else {
+            output = string;
+        }
+        return output;
+    },
+    _checkMissing: function (portfolioType, item) {
+        var output, f1, f2, f3, f4, f5;
+        f1 = MySharedData.portfolioType[0];
+        f2 = MySharedData.portfolioType[1];
+        f3 = MySharedData.portfolioType[2];
+        f4 = MySharedData.portfolioType[3];
+        f5 = MySharedData.portfolioType[4];
+        // Strategic Objective
+        if (portfolioType === f1) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Top Level';
+            }
+        }
+        // Portfolio Objective
+        if (portfolioType === f2) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        //Portfolio Epic
+        if (portfolioType === f3) {
+            if (item === 'OBN') {
+                output = 'Missing';
+            }
+            if (item === 'Release') {
+                output = 'Not Required';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        // Business Outcome
+        if (portfolioType === f4) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Assigned';
+            }
+            if (item === 'QRWP') {
+                output = 'Missing';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        // Feature
+        if (portfolioType === f5) {
+            if (item === 'OBN') {
+                output = 'Portfolio Epic Only';
+            }
+            if (item === 'Release') {
+                output = 'Not Assigned';
+            }
+            if (item === 'QRWP') {
+                output = 'Not Required';
+            }
+            if (item === 'Parent') {
+                output = 'Missing';
+            }
+        }
+        return output;
+    }
+});
+                Ext.define('App.Info', {
+    theMarkup: null,
+    debugShow: true,
+    _showDebug: function (msg){
+        if(this.debugShow===true){
+            //console.log(msg);
+        }
+    },
+    _build: function (style,startString,data,endString) {
+        this._showDebug('===== @Info Happy Birthday!');
+        this._showDebug('@Info Class Saying Hi! - I build the output HTML for displaying the info bar');
+        this._showDebug('=====');
+        var output;
+        if(style==='header'){
+            output = '<p style="font-size:25px;font-weight:bolder;margin:0;padding:0"><span style="color:#00AEEF;">'+startString+' </span><span style="color:black;">'+data+' '+endString+'</span></p>';
+        }
+        if(style==='paragraph'){
+            output = '<p>'+startString+' '+data+' '+endString+'</p>';
+        }
+        return output;
+    },
+});
+    
+                Ext.define('App.Tools', {
+    _shadeBlendConvert: function (color, percent) {
+        var R = parseInt(color.substring(1, 3), 16);
+        var G = parseInt(color.substring(3, 5), 16);
+        var B = parseInt(color.substring(5, 7), 16);
+        R = parseInt(R * (100 + percent) / 100);
+        G = parseInt(G * (100 + percent) / 100);
+        B = parseInt(B * (100 + percent) / 100);
+        R = (R < 255) ? R : 255;
+        G = (G < 255) ? G : 255;
+        B = (B < 255) ? B : 255;
+        var RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
+        var GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
+        var BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
+        return "#" + RR + GG + BB;
+    },
+});
+                Ext.define('App.Version', {
+    constructor: function () {
+        var theVersion = Ext.getVersion().version;
+        return theVersion;
+    }
+});
+                Ext.define('App.Emailer', {
+    _emailer: function (coreData, xData1, xData2, xData3, xData4) {
+        var gProp = App.Runtime;
+        var PcontactSubject = 'REF: AC APP ';
+        var PcontactMessage = '=========== Please leave your message above this line ==========';
+        // User Vars
+        var yourapp = '> Browser Web App Name > ' + navigator.appName;
+        var yourappalt = '> Browser User Agent > ' + navigator.userAgent;
+        var yourversion = '> Browser Version > ' + navigator.appVersion;
+        var yourappcodename = '> Browser Code Name > ' + navigator.appCodeName;
+        var yourplatform = '> Platform > ' + navigator.platform;
+        var youroscpu = '> OS CPU > ' + navigator.oscpu;
+        var yourcookie = '> Cookie Enabled > ' + navigator.cookieEnabled;
+        var outwinw = '> Owidth > ' + window.outerWidth;
+        var outwinh = '> Oheight > ' + window.outerHeight;
+        var inwinw = '> Iwidth > ' + window.innerWidth;
+        var inwinh = '> Iheight > ' + window.innerHeight;
+        var uri = '> Base URI > ' + document.getElementsByTagName('script')[0].baseURI;
+        var src = '> SRC > ' + document.getElementsByTagName('script')[0].src;
+        var localname = '> LocalName > ' + document.getElementsByTagName('script')[0].localName;
+        var type = '> Type > ' + document.getElementsByTagName('script')[0].type;
+        var userData = [
+            yourapp,
+            yourappalt,
+            yourversion,
+            yourappcodename,
+            yourplatform,
+            youroscpu,
+            yourcookie,
+            outwinw,
+            outwinh,
+            inwinw,
+            inwinh,
+            uri,
+            src,
+            localname,
+            type
+        ];
+        // Tools
+        var charReturn = '\r\n';
+        // Emailer
+        var subject = PcontactSubject + ' [ App : ' + gProp.PappID + ' ] : [ version : ' + gProp.Pversion + ' ]';
+        var message = PcontactMessage;
+        var report = '';
+
+        report += charReturn + charReturn;
+        report += 'Environment Report > ' + charReturn;
+        report += '> Sencha ExtJS Version > ' + Ext.getVersion().version + charReturn + charReturn;
+        report += 'Agile Central Report > ' + charReturn;
+        report += '> AC User Username > ' + xData1.UserName+ charReturn;
+        report += '> AC User Name > ' + xData1._refObjectName+ charReturn;
+        report += '> AC User UUID > ' + xData1._refObjectUUID+ charReturn; 
+        report += '> AC User Role > ' + xData1.Role+ charReturn;
+        report += '> AC User Loc > ' + xData1._ref+ charReturn;
+        report += '> AC User ObjectID > ' + xData1.ObjectID+ charReturn;
+        report += '> AC User Default LPage > ' + xData1.LandingPage+ charReturn;
+        report += '> AC Application Node > ' + xData2.Name+ charReturn;
+        report += '> AC Application Node UUID > ' + xData2._refObjectUUID+ charReturn;
+        report += '> AC Application Workspace > ' + xData3.Name+ charReturn;
+        report += '> AC Application Workspace UUID > ' + xData3._refObjectUUID+ charReturn;
+        report += '> AC Subscription Sub Modules > ' + xData4.Modules+ charReturn;  
+        report += '> AC Subscription UUID > ' + xData4._refObjectUUID+ charReturn; 
+        report += '> AC Subscription Name > ' + xData4._refObjectName+ charReturn+ charReturn;   
+
+        report += 'Build Details ' + charReturn;
+        report += '> ReleaseDate > ' + gProp.PreleaseDate + charReturn;
+        report += '> Owner > ' + gProp.Powner + charReturn;
+        report += '> Version > ' + gProp.Pversion + charReturn;
+        report += '> Description > ' + gProp.Pdescription + charReturn;
+        report += '> App ID > ' + gProp.PappID + charReturn + charReturn;
+
+        report += 'Application Report Found ' + coreData.length + ' items' + charReturn;
+        for (var i = 0; i < coreData.length; i++) {
+            report += '> ' + coreData[i].raw.FormattedID + ' : ';
+            report += coreData[i].raw.Name + ' : ';
+            report += coreData[i].raw._ref + charReturn;
+        }
+        report += charReturn;
+        report += 'System Report Found ' + userData.length + ' items'+charReturn;
+        for (var x = 0; x < userData.length; x++) {
+            report += userData[x] + charReturn;
+        }
+        report = encodeURIComponent(report);      
+        return window.location = 'mailto:' + gProp.PsupportEmail + '?subject=' + subject + '&body=' + message + report;
+    },
+});
+
+            Rally.launchApp('PrintApp', {
+                name:"Print",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+
+    <style type="text/css">
+        .app {
+  /* Add app styles here */
+}
+
+    </style>
+
+    <style type="text/css">
+        /* Bar */
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}
+.bar {
+  width: 100%;
+  height: 20px;
+  border: 1px solid #6B7CA4;
+  border-radius: 10px;
+  background-size: 28px 28px;
+  animation: move .5s linear infinite;
+}
+/* Bar 2 */
+.loader,
+.loader:before,
+.loader:after {
+  background: #437EA0;
+  -webkit-animation: load1 1s infinite ease-in-out;
+  animation: load1 1s infinite ease-in-out;
+  width: 1em;
+  height: 4em;
+}
+.loader {
+  color: #437EA0;
+  text-indent: -9999em;
+  margin: 88px auto;
+  position: relative;
+  font-size: 11px;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+  position: absolute;
+  top: 0;
+  content: '';
+}
+.loader:before {
+  left: -1.5em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 1.5em;
+}
+@-webkit-keyframes load1 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 0;
+    height: 4em;
+  }
+  40% {
+    box-shadow: 0 -2em;
+    height: 5em;
+  }
+}
+@keyframes load1 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 0;
+    height: 4em;
+  }
+  40% {
+    box-shadow: 0 -2em;
+    height: 5em;
+  }
+}
+
+    </style>
+</head>
+<body>
+</body>
+</html>

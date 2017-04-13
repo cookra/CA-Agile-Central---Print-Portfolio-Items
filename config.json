@@ -1,0 +1,20 @@
+{
+    "name": "Print",
+    "className": "PrintApp",
+    "server": "https://rally1.rallydev.com",
+    "sdk": "2.1",
+    "javascript": [
+        "App.js",
+        "App/Runtime.js",
+        "App/Loader.js",
+        "App/Card.js",
+        "App/Info.js",
+        "App/Tools.js",
+        "App/Version.js",
+        "App/Emailer.js"
+    ],
+    "css": [
+        "app.css",
+        "loader.css"
+    ]
+}
